@@ -1,0 +1,10 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /config/
+Disallow: /includes/
+
+Allow: /public/css/
+Allow: /public/js/
+Allow: /public/uploads/
+
+Sitemap: <?= base_url('sitemap.php') ?>

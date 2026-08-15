@@ -69,11 +69,11 @@ require_once __DIR__ . '/includes/header.php';
       <tbody>
       <?php $subtotal=0; foreach ($items as $it): $p=$it['product']; $subtotal += $it['line_total']; ?>
         <tr>
-          <td><?= esc($p['title']) ?></td>
-          <td><?= currency_format($p['discount_price'] ?: $p['price']) ?></td>
-          <td><input type="number" name="quantities[<?= $p['id'] ?>]" value="<?= $it['quantity'] ?>" min="0" max="<?= $p['stock'] ?>" style="width:80px"></td>
-          <td><?= currency_format($it['line_total']) ?></td>
-          <td><a href="<?= base_url('cart.php?action=remove&id=' . $p['id']) ?>" class="btn btn-sm btn-danger">Remove</a></td>
+          <td data-label="Book"><?= esc($p['title']) ?></td>
+          <td data-label="Price"><?= currency_format($p['discount_price'] ?: $p['price']) ?></td>
+          <td data-label="Qty"><input type="number" name="quantities[<?= $p['id'] ?>]" value="<?= $it['quantity'] ?>" min="0" max="<?= $p['stock'] ?>" style="width:80px"></td>
+          <td data-label="Line"><?= currency_format($it['line_total']) ?></td>
+          <td data-label=""><a href="<?= base_url('cart.php?action=remove&id=' . $p['id']) ?>" class="btn btn-sm btn-danger">Remove</a></td>
         </tr>
       <?php endforeach; ?>
       </tbody>

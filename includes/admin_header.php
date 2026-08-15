@@ -15,7 +15,7 @@ require_once __DIR__ . '/functions.php';
 </head>
 <body>
   <div class="d-flex" style="min-height:100vh;gap:24px;padding:20px;background:var(--background)">
-    <aside class="admin-sidebar">
+    <aside class="admin-sidebar" role="navigation" aria-label="Admin sidebar">
       <div class="mb-4">
         <a href="<?= base_url('admin/index.php') ?>" class="d-block mb-3" style="font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--primary)">Bookshop Admin</a>
       </div>
@@ -26,12 +26,15 @@ require_once __DIR__ . '/functions.php';
         <a class="nav-link" href="<?= base_url('admin/orders/index.php') ?>">Orders</a>
         <a class="nav-link" href="<?= base_url('admin/sales.php') ?>">Sales</a>
         <a class="nav-link" href="<?= base_url('admin/tax.php') ?>">Tax</a>
+        <a class="nav-link" href="<?= base_url('admin/seo/index.php') ?>">SEO</a>
         <a class="nav-link" href="<?= base_url('admin/logout.php') ?>">Logout</a>
       </nav>
     </aside>
 
-    <div style="flex:1">
+      <div style="flex:1">
+      <div class="admin-overlay" id="adminOverlay"></div>
       <header class="admin-topbar d-flex align-items-center justify-content-between mb-4">
+        <button id="admin-menu-toggle" class="btn btn-outline-primary d-lg-none me-2" aria-label="Open admin menu">☰</button>
         <div>
           <h2 class="h5 mb-0">Admin</h2>
           <small class="text-muted-2">Manage your store</small>

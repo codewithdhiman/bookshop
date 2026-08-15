@@ -347,3 +347,24 @@ VALUES
     NULL,
     1
 );
+
+
+-- =========================================================
+-- SEO METADATA
+-- =========================================================
+CREATE TABLE IF NOT EXISTS seo_meta (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    entity_type VARCHAR(50) NOT NULL,
+    entity_id BIGINT UNSIGNED DEFAULT NULL,
+    seo_title VARCHAR(255) DEFAULT NULL,
+    seo_description TEXT DEFAULT NULL,
+    seo_keywords TEXT DEFAULT NULL,
+    canonical VARCHAR(255) DEFAULT NULL,
+    og_title VARCHAR(255) DEFAULT NULL,
+    og_description TEXT DEFAULT NULL,
+    og_image VARCHAR(255) DEFAULT NULL,
+    twitter_image VARCHAR(255) DEFAULT NULL,
+    robots VARCHAR(100) DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY ux_entity (entity_type, entity_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

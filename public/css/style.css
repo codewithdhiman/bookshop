@@ -1,5 +1,5 @@
 /* public/css/style.css */
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
-.card-img-top { height: 240px; object-fit: cover; }
+.card-img-top { height: auto; aspect-ratio: 3/4; object-fit: cover; }
 .product-title { font-size: 1rem; font-weight: 600; }
 .muted { color: #6c757d; }

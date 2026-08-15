@@ -107,6 +107,147 @@ function get_setting(PDO $pdo, string $key, $default = null)
     }
 }
 
+// Set or update a setting
+function set_setting(PDO $pdo, string $key, $value): void
+{
+    $pdo->exec("CREATE TABLE IF NOT EXISTS settings (id INT AUTO_INCREMENT PRIMARY KEY, `key` VARCHAR(100) UNIQUE, `value` TEXT)");
+    $st = $pdo->prepare('INSERT INTO settings (`key`,`value`) VALUES (?,?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`)');
+    $st->execute([$key, (string)$value]);
+}
+
+// Ensure SEO table exists
+function ensure_seo_table(PDO $pdo)
+{
+    $pdo->exec("CREATE TABLE IF NOT EXISTS seo_meta (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        entity_type VARCHAR(50) NOT NULL,
+        entity_id INT DEFAULT NULL,
+        seo_title VARCHAR(255) DEFAULT NULL,
+        seo_description TEXT DEFAULT NULL,
+        seo_keywords TEXT DEFAULT NULL,
+        canonical VARCHAR(255) DEFAULT NULL,
+        og_title VARCHAR(255) DEFAULT NULL,
+        og_description TEXT DEFAULT NULL,
+        og_image VARCHAR(255) DEFAULT NULL,
+        twitter_image VARCHAR(255) DEFAULT NULL,
+        robots VARCHAR(100) DEFAULT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY ux_entity (entity_type, entity_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
+// Fetch SEO metadata for an entity (entity_type like 'product','category','page')
+function get_seo_meta(PDO $pdo, string $entity_type, ?int $entity_id = null): array
+{
+    ensure_seo_table($pdo);
+    $st = $pdo->prepare('SELECT * FROM seo_meta WHERE entity_type = ? AND ' . ($entity_id === null ? 'entity_id IS NULL' : 'entity_id = ?') . ' LIMIT 1');
+    if ($entity_id === null) $st->execute([$entity_type]); else $st->execute([$entity_type, $entity_id]);
+    $row = $st->fetch(PDO::FETCH_ASSOC);
+    return $row ?: [];
+}
+
+// Save SEO metadata
+function save_seo_meta(PDO $pdo, string $entity_type, ?int $entity_id, array $data): void
+{
+    ensure_seo_table($pdo);
+    $existing = get_seo_meta($pdo, $entity_type, $entity_id);
+    if ($existing) {
+        $sql = 'UPDATE seo_meta SET seo_title = ?, seo_description = ?, seo_keywords = ?, canonical = ?, og_title = ?, og_description = ?, og_image = ?, twitter_image = ?, robots = ? WHERE id = ?';
+        $st = $pdo->prepare($sql);
+        $st->execute([
+            $data['seo_title'] ?? null,
+            $data['seo_description'] ?? null,
+            $data['seo_keywords'] ?? null,
+            $data['canonical'] ?? null,
+            $data['og_title'] ?? null,
+            $data['og_description'] ?? null,
+            $data['og_image'] ?? null,
+            $data['twitter_image'] ?? null,
+            $data['robots'] ?? null,
+            $existing['id']
+        ]);
+    } else {
+        $sql = 'INSERT INTO seo_meta (entity_type, entity_id, seo_title, seo_description, seo_keywords, canonical, og_title, og_description, og_image, twitter_image, robots) VALUES (?,?,?,?,?,?,?,?,?,?,?)';
+        $st = $pdo->prepare($sql);
+        $st->execute([
+            $entity_type,
+            $entity_id,
+            $data['seo_title'] ?? null,
+            $data['seo_description'] ?? null,
+            $data['seo_keywords'] ?? null,
+            $data['canonical'] ?? null,
+            $data['og_title'] ?? null,
+            $data['og_description'] ?? null,
+            $data['og_image'] ?? null,
+            $data['twitter_image'] ?? null,
+            $data['robots'] ?? null,
+        ]);
+    }
+}
+
+// Render SEO meta tags for the current request, with sensible fallbacks
+function render_seo_meta(PDO $pdo): void
+{
+    $siteName = get_setting($pdo, 'site_name', 'Bookshop');
+    $siteUrl = rtrim(get_setting($pdo, 'site_url', base_url()), '/');
+
+    $script = basename($_SERVER['SCRIPT_NAME']);
+
+    $meta = [];
+    // Default global meta
+    $global = get_setting($pdo, 'global_meta', null);
+    if ($global && is_string($global)) {
+        // try json decode
+        $g = @json_decode($global, true);
+        if (is_array($g)) {
+            $meta = array_merge($meta, $g);
+        }
+    }
+
+    // Page-specific
+    if ($script === 'product.php' && !empty($_GET['id'])) {
+        $id = (int)$_GET['id'];
+        $p = $pdo->prepare('SELECT * FROM products WHERE id = ? LIMIT 1'); $p->execute([$id]); $prod = $p->fetch();
+        if ($prod) {
+            $seo = get_seo_meta($pdo, 'product', $id);
+            $meta['title'] = $seo['seo_title'] ?? ($prod['title'] . ' | ' . $siteName);
+            $meta['description'] = $seo['seo_description'] ?? substr(strip_tags($prod['description'] ?? ''), 0, 160);
+            $meta['og_image'] = $seo['og_image'] ?? ($prod['cover_image'] ? base_url('public/uploads/' . $prod['cover_image']) : null);
+            $meta['url'] = $seo['canonical'] ?? ($siteUrl . '/' . ltrim(base_url('product.php?id=' . $id), '/'));
+            // JSON-LD Product
+            echo "<meta name=\"description\" content=\"" . esc($meta['description']) . "\">\n";
+            echo "<link rel=\"canonical\" href=\"" . esc($meta['url']) . "\">\n";
+            echo "<meta property=\"og:title\" content=\"" . esc($meta['title']) . "\">\n";
+            echo "<meta property=\"og:description\" content=\"" . esc($meta['description']) . "\">\n";
+            if (!empty($meta['og_image'])) echo "<meta property=\"og:image\" content=\"" . esc($meta['og_image']) . "\">\n";
+            echo "<meta property=\"og:type\" content=\"product\">\n";
+            echo "<meta property=\"og:site_name\" content=\"" . esc($siteName) . "\">\n";
+            echo "<meta name=\"twitter:card\" content=\"summary_large_image\">\n";
+            echo "<meta name=\"twitter:title\" content=\"" . esc($meta['title']) . "\">\n";
+            echo "<meta name=\"twitter:description\" content=\"" . esc($meta['description']) . "\">\n";
+            if (!empty($meta['og_image'])) echo "<meta name=\"twitter:image\" content=\"" . esc($meta['og_image']) . "\">\n";
+
+            // Structured data
+            $ld = [
+                '@context' => 'https://schema.org/',
+                '@type' => 'Product',
+                'name' => $prod['title'],
+                'image' => !empty($meta['og_image']) ? [$meta['og_image']] : [],
+                'description' => $meta['description'],
+                'sku' => $prod['isbn'] ?? null,
+                'brand' => ['@type'=>'Brand','name'=>$prod['publisher'] ?? null],
+                'offers' => ['@type'=>'Offer','price'=> (string)($prod['discount_price'] ?: $prod['price']),'priceCurrency'=>'INR','availability' => ($prod['stock']>0? 'https://schema.org/InStock':'https://schema.org/OutOfStock')]
+            ];
+            echo "<script type=\"application/ld+json\">" . json_encode($ld, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) . "</script>\n";
+            return;
+        }
+    }
+
+    // Fallbacks: simple global meta
+    if (!empty($meta['title'])) echo "<title>" . esc($meta['title']) . "</title>\n";
+    if (!empty($meta['description'])) echo "<meta name=\"description\" content=\"" . esc($meta['description']) . "\">\n";
+}
+
 // Ensure a column exists on a table (safe-add)
 function ensure_column_exists(PDO $pdo, string $table, string $column, string $definition)
 {

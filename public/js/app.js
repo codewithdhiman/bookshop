@@ -58,4 +58,62 @@ document.addEventListener('DOMContentLoaded', function(){
             reader.readAsDataURL(file);
         }
     });
+
+    // SEO char counters for inputs with data-charcount
+    document.querySelectorAll('[data-charcount]').forEach(function(el){
+        var max = parseInt(el.getAttribute('data-charcount')||'0',10);
+        var counter = document.createElement('div');
+        counter.className = 'small text-muted seo-counter';
+        el.parentNode.insertBefore(counter, el.nextSibling);
+        var update = function(){
+            var len = (el.value||'').length;
+            if (max>0) counter.textContent = (max - len) + ' chars left';
+            else counter.textContent = len + ' chars';
+        };
+        el.addEventListener('input', update);
+        update();
+    });
+
+    // Navbar collapse: close on outside click, close on nav item click, and Escape
+    (function(){
+        var toggler = document.querySelector('.navbar-toggler');
+        var collapse = document.getElementById('navmenu');
+        if (!toggler || !collapse) return;
+
+        // helper to check open state (Bootstrap adds 'show' class)
+        function isOpen(){ return collapse.classList.contains('show'); }
+
+        // Close when clicking nav links (mobile)
+        collapse.addEventListener('click', function(e){
+            if (e.target.closest('.nav-link')) {
+                // let bootstrap handle if present, then remove show
+                collapse.classList.remove('show');
+            }
+        });
+
+        // Close when clicking outside
+        document.addEventListener('click', function(e){
+            if (!isOpen()) return;
+            if (e.target.closest('.navbar')) return;
+            collapse.classList.remove('show');
+        });
+
+        // Escape to close
+        document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && isOpen()) collapse.classList.remove('show'); });
+    })();
+
+    // Admin sidebar toggle for mobile
+    (function(){
+        var toggle = document.getElementById('admin-menu-toggle');
+        var sidebar = document.querySelector('.admin-sidebar');
+        var overlay = document.querySelector('.admin-overlay');
+        if (!toggle || !sidebar) return;
+        function open(){ sidebar.classList.add('open'); if(overlay) overlay.classList.add('show'); document.body.style.overflow='hidden'; }
+        function close(){ sidebar.classList.remove('open'); if(overlay) overlay.classList.remove('show'); document.body.style.overflow=''; }
+        toggle.addEventListener('click', function(){ if (sidebar.classList.contains('open')) close(); else open(); });
+        if (overlay) overlay.addEventListener('click', close);
+        document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && sidebar.classList.contains('open')) close(); });
+        // Close when nav link inside sidebar clicked (mobile)
+        sidebar.addEventListener('click', function(e){ if (e.target.closest('.nav-link')) close(); });
+    })();
 });

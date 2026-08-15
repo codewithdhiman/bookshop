@@ -6,7 +6,7 @@ $user = $_SESSION['user'] ?? null;
 <nav class="navbar navbar-expand-lg">
   <div class="container">
     <a class="navbar-brand" href="<?= base_url() ?>">Bookshop</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu" aria-label="Toggle navigation">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu" aria-controls="navmenu" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
@@ -14,7 +14,6 @@ $user = $_SESSION['user'] ?? null;
       <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
         <li class="nav-item"><a class="nav-link" href="<?= base_url() ?>">Home</a></li>
         <li class="nav-item"><a class="nav-link" href="<?= base_url('products.php') ?>">Books</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= base_url('products.php') ?>">Categories</a></li>
       </ul>
 
       <ul class="navbar-nav ms-auto align-items-center">
@@ -28,10 +27,10 @@ $user = $_SESSION['user'] ?? null;
         </li>
 
         <li class="nav-item me-2">
-          <a class="nav-link d-flex align-items-center" href="<?= base_url('cart.php') ?>" aria-label="Cart">
+            <a class="nav-link d-flex align-items-center" href="<?= base_url('cart.php') ?>" aria-label="Cart">
             <!-- simple cart icon -->
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 6h15l-1.5 9h-12L4 2H2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span class="ms-2">Cart</span>
+            <span class="ms-2 cart-label">Cart</span>
             <span class="badge bg-secondary ms-2" id="cart-count"><?= array_sum($_SESSION['cart'] ?? []) ?: 0 ?></span>
           </a>
         </li>

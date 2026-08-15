@@ -13,11 +13,11 @@ $p = $stmt->fetch();
 if (!$p) { echo '<div class="alert alert-danger">Product not found.</div>'; require __DIR__ . '/includes/footer.php'; exit; }
 
 ?>
-<div class="row">
-  <div class="col-md-5">
-    <img src="<?= base_url('public/uploads/' . ($p['cover_image'] ?? 'placeholder.png')) ?>" class="img-fluid" alt="<?= esc($p['title']) ?>">
+<div class="row product-detail">
+  <div class="col-12 col-md-5">
+    <div class="cover"><img src="<?= base_url('public/uploads/' . ($p['cover_image'] ?? 'placeholder.png')) ?>" class="img-fluid" alt="<?= esc($p['title']) ?>"></div>
   </div>
-  <div class="col-md-7">
+  <div class="col-12 col-md-7">
     <h2><?= esc($p['title']) ?></h2>
     <p class="small muted">By <?= esc($p['author']) ?> | <?= esc($p['publisher']) ?></p>
     <p>

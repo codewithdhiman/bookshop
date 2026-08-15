@@ -28,7 +28,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tax_rate = $_POST['tax_rate'] !== '' ? (float)$_POST['tax_rate'] : null;
         $stmt = $pdo->prepare('INSERT INTO products (category_id, title, slug, isbn, author, publisher, description, price, discount_price, stock, cover_image, status, tax_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([$category_id, $title, $slug, $_POST['isbn'] ?? null, $_POST['author'] ?? null, $_POST['publisher'] ?? null, $_POST['description'] ?? null, $price, $discount, $stock, $imageName, isset($_POST['status'])?1:0, $tax_rate]);
-        header('Location: index.php'); exit;
+      // Save SEO metadata for the newly created product
+      $newId = (int)$pdo->lastInsertId();
+      $seoData = [
+        'seo_title' => $_POST['seo_title'] ?? null,
+        'seo_description' => $_POST['seo_description'] ?? null,
+        'seo_keywords' => $_POST['seo_keywords'] ?? null,
+        'canonical' => $_POST['canonical'] ?? null,
+        'og_title' => $_POST['og_title'] ?? null,
+        'og_description' => $_POST['og_description'] ?? null,
+        'robots' => $_POST['robots'] ?? null,
+      ];
+      if (!empty($_FILES['og_image']) && $_FILES['og_image']['error'] !== UPLOAD_ERR_NO_FILE) {
+        [$fn, $err] = handle_image_upload($_FILES['og_image']);
+        if ($fn) $seoData['og_image'] = $fn;
+      }
+      if (!empty($_FILES['twitter_image']) && $_FILES['twitter_image']['error'] !== UPLOAD_ERR_NO_FILE) {
+        [$fn, $err] = handle_image_upload($_FILES['twitter_image']);
+        if ($fn) $seoData['twitter_image'] = $fn;
+      }
+      save_seo_meta($pdo, 'product', $newId, $seoData);
+      header('Location: index.php'); exit;
     }
 }
 ?>
@@ -62,6 +82,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <input name="cover_image" type="file" accept="image/*" class="form-control" data-preview="#coverPreview">
           <img id="coverPreview" src="" alt="Preview" style="display:none;margin-top:10px;width:100%;border-radius:8px;object-fit:cover">
         </div>
+        <details class="mb-3">
+          <summary class="form-label">SEO Settings</summary>
+          <div style="margin-top:10px;">
+            <div class="mb-2"><label class="form-label">SEO Title <small class="text-muted">(<= 60)</small></label>
+              <input name="seo_title" class="form-control" maxlength="255" data-charcount="60"></div>
+            <div class="mb-2"><label class="form-label">Meta Description <small class="text-muted">(<= 160)</small></label>
+              <textarea name="seo_description" class="form-control" rows="3" maxlength="320" data-charcount="160"></textarea></div>
+            <div class="mb-2"><label class="form-label">Keywords</label>
+              <input name="seo_keywords" class="form-control"></div>
+            <div class="mb-2"><label class="form-label">Canonical URL</label>
+              <input name="canonical" class="form-control"></div>
+            <div class="mb-2"><label class="form-label">OG Title</label>
+              <input name="og_title" class="form-control"></div>
+            <div class="mb-2"><label class="form-label">OG Description</label>
+              <textarea name="og_description" class="form-control" rows="2"></textarea></div>
+            <div class="mb-2"><label class="form-label">OG Image</label>
+              <input name="og_image" type="file" accept="image/*" class="form-control" data-preview="#ogPreview"></div>
+            <img id="ogPreview" src="" alt="OG preview" style="display:none;width:100%;margin-top:8px;border-radius:6px;object-fit:cover">
+            <div class="mb-2"><label class="form-label">Twitter Image</label>
+              <input name="twitter_image" type="file" accept="image/*" class="form-control" data-preview="#twPreview"></div>
+            <img id="twPreview" src="" alt="Twitter preview" style="display:none;width:100%;margin-top:8px;border-radius:6px;object-fit:cover">
+            <div class="mb-2"><label class="form-label">Robots</label>
+              <select name="robots" class="form-select">
+                <option value="">Default</option>
+                <option value="noindex,nofollow">noindex,nofollow</option>
+                <option value="noindex,follow">noindex,follow</option>
+              </select>
+            </div>
+            <div class="text-muted small">Title: ~50–60 chars · Description: ~150–160 chars</div>
+          </div>
+        </details>
         <div class="mb-3 form-check"><input type="checkbox" name="status" class="form-check-input" id="status" checked><label for="status" class="form-check-label">Active</label></div>
         <div class="d-grid"><button class="btn btn-primary">Create</button></div>
       </div>
