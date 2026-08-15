@@ -1,11 +1,11 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/config/database.php';
 
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) {
   header('Location: ' . base_url('products.php')); exit;
 }
+require_once __DIR__ . '/includes/header.php';
 $pdo = getPDO();
 $stmt = $pdo->prepare('SELECT p.*, c.name as category_name FROM products p JOIN categories c ON c.id = p.category_id WHERE p.id = ? AND p.status = 1 LIMIT 1');
 $stmt->execute([$id]);

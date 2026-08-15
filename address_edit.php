@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/header.php';
 require_login();
 $user = current_user();
 $pdo = getPDO();
@@ -28,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: ' . base_url('addresses.php')); exit;
     }
 }
+require_once __DIR__ . '/includes/header.php';
 ?>
 <h3>Edit Address</h3>
 <?php foreach ($errors as $e): ?> <div class="alert alert-danger"><?= esc($e) ?></div> <?php endforeach; ?>

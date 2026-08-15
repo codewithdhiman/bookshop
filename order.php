@@ -1,10 +1,10 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-require_once __DIR__ . '/includes/header.php';
 require_login();
 $user = current_user();
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) { header('Location: ' . base_url('my-orders.php')); exit; }
+require_once __DIR__ . '/includes/header.php';
 $pdo = getPDO();
 $stmt = $pdo->prepare('SELECT * FROM orders WHERE id = ? AND user_id = ? LIMIT 1');
 $stmt->execute([$id, $user['id']]);

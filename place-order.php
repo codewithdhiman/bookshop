@@ -78,7 +78,9 @@ try {
     header('Location: ' . base_url('order-success.php?id=' . $orderId));
     exit;
 } catch (Exception $e) {
-    $pdo->rollBack();
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     error_log('Order error: ' . $e->getMessage());
     $_SESSION['flash_error'] = 'Something went wrong while placing your order. Please try again.';
     header('Location: ' . base_url('checkout.php')); exit;

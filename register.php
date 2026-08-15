@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
+
 require_once __DIR__ . '/includes/auth.php';
 
 $errors = [];
@@ -8,6 +8,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     [$ok, $msg] = register_user([ 'name'=>$_POST['name'] ?? '', 'email'=>$_POST['email'] ?? '', 'password'=>$_POST['password'] ?? '', 'phone'=>$_POST['phone'] ?? '' ]);
     if ($ok) { $_SESSION['flash_success']=$msg; header('Location: ' . base_url('login.php')); exit; } else { $errors[] = $msg; }
 }
+
+require_once __DIR__ . '/includes/header.php';
 
 ?>
 <div class="row">

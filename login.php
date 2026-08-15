@@ -1,5 +1,4 @@
 <?php
-require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/includes/auth.php';
 
 $errors = [];
@@ -8,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   [$ok, $msg] = login_user($_POST['email'] ?? '', $_POST['password'] ?? '');
   if ($ok) { header('Location: ' . base_url()); exit; } else { $errors[] = $msg; }
 }
-
+require_once __DIR__ . '/includes/header.php';
 ?>
 <div class="row">
   <div class="col-md-4 offset-md-4">
