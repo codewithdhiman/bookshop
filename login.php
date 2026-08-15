@@ -4,9 +4,9 @@ require_once __DIR__ . '/includes/auth.php';
 
 $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf_token($_POST['csrf_token'] ?? '')) { $errors[] = 'Invalid CSRF'; }
-    [$ok, $msg] = login_user($_POST['email'] ?? '', $_POST['password'] ?? '');
-    if ($ok) { header('Location: /'); exit; } else { $errors[] = $msg; }
+  if (!verify_csrf_token($_POST['csrf_token'] ?? '')) { $errors[] = 'Invalid CSRF'; }
+  [$ok, $msg] = login_user($_POST['email'] ?? '', $_POST['password'] ?? '');
+  if ($ok) { header('Location: ' . base_url()); exit; } else { $errors[] = $msg; }
 }
 
 ?>

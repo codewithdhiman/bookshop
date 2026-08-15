@@ -12,7 +12,7 @@ $featured = $stmt->fetchAll();
     <div class="p-5 bg-light rounded-3 text-center">
       <h1>Welcome to Bookshop</h1>
       <p class="lead">Find your next favorite book.</p>
-      <a href="/products.php" class="btn btn-primary">Browse Books</a>
+      <a href="<?= base_url('products.php') ?>" class="btn btn-primary">Browse Books</a>
     </div>
   </div>
 
@@ -22,12 +22,12 @@ $featured = $stmt->fetchAll();
       <?php foreach ($featured as $p): ?>
         <div class="col-md-3 mb-3">
           <div class="card h-100">
-            <img src="/public/uploads/<?= esc($p['cover_image'] ?? 'placeholder.png') ?>" class="card-img-top" alt="<?= esc($p['title']) ?>">
+            <img src="<?= base_url('public/uploads/' . ($p['cover_image'] ?? 'placeholder.png')) ?>" class="card-img-top" alt="<?= esc($p['title']) ?>">
             <div class="card-body">
               <h5 class="product-title"><?= esc($p['title']) ?></h5>
               <p class="small muted"><?= esc($p['author']) ?></p>
               <p class="mb-0"><?= currency_format($p['discount_price'] ?: $p['price']) ?></p>
-              <a href="/product.php?id=<?= $p['id'] ?>" class="btn btn-sm btn-outline-primary mt-2">View</a>
+              <a href="<?= base_url('product.php?id=' . $p['id']) ?>" class="btn btn-sm btn-outline-primary mt-2">View</a>
             </div>
           </div>
         </div>

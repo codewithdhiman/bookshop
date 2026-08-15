@@ -91,3 +91,32 @@ function shipping_charge_for(float $subtotal): float
 {
     return $subtotal >= FREE_SHIPPING_THRESHOLD ? 0.00 : SHIPPING_CHARGE;
 }
+
+// Image upload helper
+function handle_image_upload(array $file, string $targetDir = __DIR__ . '/../public/uploads'): array
+{
+    $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
+    if ($file['error'] === UPLOAD_ERR_NO_FILE) {
+        return [null, null];
+    }
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        return [null, 'Upload error'];
+    }
+    if ($file['size'] > 2 * 1024 * 1024) { // 2MB
+        return [null, 'File too large (max 2MB)'];
+    }
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->file($file['tmp_name']);
+    if (!isset($allowed[$mime])) {
+        return [null, 'Invalid file type'];
+    }
+    $ext = $allowed[$mime];
+    if (!is_dir($targetDir)) { mkdir($targetDir, 0755, true); }
+    $base = bin2hex(random_bytes(8));
+    $filename = $base . '.' . $ext;
+    $dest = rtrim($targetDir, '/\\') . DIRECTORY_SEPARATOR . $filename;
+    if (!move_uploaded_file($file['tmp_name'], $dest)) {
+        return [null, 'Failed to move uploaded file'];
+    }
+    return [$filename, null];
+}

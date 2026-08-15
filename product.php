@@ -4,7 +4,7 @@ require_once __DIR__ . '/config/database.php';
 
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) {
-    header('Location: /products.php'); exit;
+  header('Location: ' . base_url('products.php')); exit;
 }
 $pdo = getPDO();
 $stmt = $pdo->prepare('SELECT p.*, c.name as category_name FROM products p JOIN categories c ON c.id = p.category_id WHERE p.id = ? AND p.status = 1 LIMIT 1');
@@ -15,7 +15,7 @@ if (!$p) { echo '<div class="alert alert-danger">Product not found.</div>'; requ
 ?>
 <div class="row">
   <div class="col-md-5">
-    <img src="/public/uploads/<?= esc($p['cover_image'] ?? 'placeholder.png') ?>" class="img-fluid" alt="<?= esc($p['title']) ?>">
+    <img src="<?= base_url('public/uploads/' . ($p['cover_image'] ?? 'placeholder.png')) ?>" class="img-fluid" alt="<?= esc($p['title']) ?>">
   </div>
   <div class="col-md-7">
     <h2><?= esc($p['title']) ?></h2>
@@ -38,7 +38,7 @@ if (!$p) { echo '<div class="alert alert-danger">Product not found.</div>'; requ
     </p>
 
     <?php if ($p['stock'] > 0): ?>
-      <form method="post" action="/cart.php" class="row g-2 align-items-center">
+      <form method="post" action="<?= base_url('cart.php') ?>" class="row g-2 align-items-center">
         <div class="col-auto">
           <input type="number" name="quantity" value="1" min="1" max="<?= $p['stock'] ?>" class="form-control" style="width:100px">
           <input type="hidden" name="product_id" value="<?= $p['id'] ?>">

@@ -4,7 +4,7 @@ require_once __DIR__ . '/config/database.php';
 
 $cart = cart_get();
 if (empty($cart)) {
-    echo '<div class="alert alert-info">Cart is empty. <a href="/products.php">Shop now</a></div>'; require __DIR__ . '/includes/footer.php'; exit;
+  echo '<div class="alert alert-info">Cart is empty. <a href="' . base_url('products.php') . '">Shop now</a></div>'; require __DIR__ . '/includes/footer.php'; exit;
 }
 
 $pdo = getPDO();
@@ -30,7 +30,7 @@ $grand = $subtotal + $shipping;
 <div class="row">
   <div class="col-md-6">
     <h4>Shipping Information</h4>
-    <form method="post" action="/place-order.php">
+    <form method="post" action="<?= base_url('place-order.php') ?>">
       <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
       <div class="mb-3">
         <label class="form-label">Name</label>

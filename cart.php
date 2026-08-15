@@ -11,10 +11,10 @@ if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = $pdo->prepare('SELECT stock FROM products WHERE id = ? AND status = 1 LIMIT 1');
     $stmt->execute([$productId]);
     $p = $stmt->fetch();
-    if (!$p) { $_SESSION['flash_error']='Product not found'; header('Location: /products.php'); exit; }
-    if ($qty > $p['stock']) { $_SESSION['flash_error']='Requested quantity exceeds stock'; header('Location: /product.php?id=' . $productId); exit; }
+    if (!$p) { $_SESSION['flash_error']='Product not found'; header('Location: ' . base_url('products.php')); exit; }
+    if ($qty > $p['stock']) { $_SESSION['flash_error']='Requested quantity exceeds stock'; header('Location: ' . base_url('product.php?id=' . $productId)); exit; }
     cart_add($productId, $qty);
-    header('Location: /cart.php'); exit;
+    header('Location: ' . base_url('cart.php')); exit;
 }
 
 if ($action === 'update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -22,13 +22,13 @@ if ($action === 'update' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($_POST['quantities'] as $pid => $q) {
         cart_update((int)$pid, max(0, (int)$q));
     }
-    header('Location: /cart.php'); exit;
+    header('Location: ' . base_url('cart.php')); exit;
 }
 
 if ($action === 'remove') {
     $id = (int)($_GET['id'] ?? 0);
     cart_update($id, 0);
-    header('Location: /cart.php'); exit;
+    header('Location: ' . base_url('cart.php')); exit;
 }
 
 $cart = cart_get();
@@ -59,9 +59,9 @@ require_once __DIR__ . '/includes/header.php';
 <?php endif; ?>
 
 <?php if (empty($items)): ?>
-    <div class="alert alert-info">Your cart is empty. <a href="/products.php">Browse books</a></div>
+  <div class="alert alert-info">Your cart is empty. <a href="<?= base_url('products.php') ?>">Browse books</a></div>
 <?php else: ?>
-    <form method="post" action="/cart.php">
+  <form method="post" action="<?= base_url('cart.php') ?>">
     <input type="hidden" name="action" value="update">
     <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
     <table class="table">
@@ -73,7 +73,7 @@ require_once __DIR__ . '/includes/header.php';
           <td><?= currency_format($p['discount_price'] ?: $p['price']) ?></td>
           <td><input type="number" name="quantities[<?= $p['id'] ?>]" value="<?= $it['quantity'] ?>" min="0" max="<?= $p['stock'] ?>" style="width:80px"></td>
           <td><?= currency_format($it['line_total']) ?></td>
-          <td><a href="/cart.php?action=remove&id=<?= $p['id'] ?>" class="btn btn-sm btn-danger">Remove</a></td>
+          <td><a href="<?= base_url('cart.php?action=remove&id=' . $p['id']) ?>" class="btn btn-sm btn-danger">Remove</a></td>
         </tr>
       <?php endforeach; ?>
       </tbody>
@@ -84,7 +84,7 @@ require_once __DIR__ . '/includes/header.php';
       </div>
       <div>
         <strong>Subtotal: <?= currency_format($subtotal) ?></strong>
-        <a href="/checkout.php" class="btn btn-success ms-3">Proceed to Checkout</a>
+        <a href="<?= base_url('checkout.php') ?>" class="btn btn-success ms-3">Proceed to Checkout</a>
       </div>
     </div>
     </form>

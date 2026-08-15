@@ -9,9 +9,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute([$_POST['email'] ?? '']);
     $user = $stmt->fetch();
     if ($user && password_verify($_POST['password'] ?? '', $user['password']) && $user['role'] === 'admin') {
-        session_regenerate_id(true);
-        $_SESSION['user'] = ['id'=>$user['id'],'name'=>$user['name'],'email'=>$user['email'],'role'=>$user['role']];
-        header('Location: /admin/index.php'); exit;
+      session_regenerate_id(true);
+      $_SESSION['user'] = ['id'=>$user['id'],'name'=>$user['name'],'email'=>$user['email'],'role'=>$user['role']];
+      header('Location: ' . base_url('admin/index.php')); exit;
     } else {
         $error = 'Invalid credentials';
     }
@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!doctype html>
 <html><head><meta charset="utf-8"><title>Admin Login</title>
-<link href="/public/css/style.css" rel="stylesheet"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="<?= base_url('public/css/style.css') ?>" rel="stylesheet"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head><body class="bg-light">
 <div class="container py-5">
   <div class="row"><div class="col-md-4 offset-md-4">

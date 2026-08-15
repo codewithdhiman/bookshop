@@ -57,7 +57,7 @@ function current_user(): ?array
 function require_login()
 {
     if (!current_user()) {
-        header('Location: login.php');
+        header('Location: ' . base_url('login.php'));
         exit;
     }
 }

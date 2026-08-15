@@ -2,7 +2,7 @@
 require_once __DIR__ . '/includes/functions.php';
 require_once __DIR__ . '/config/database.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') { header('Location: /checkout.php'); exit; }
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') { header('Location: ' . base_url('checkout.php')); exit; }
 if (!verify_csrf_token($_POST['csrf_token'] ?? '')) { die('Invalid CSRF'); }
 
 $name = trim($_POST['name'] ?? '');
@@ -15,11 +15,11 @@ $payment_method = $_POST['payment_method'] ?? 'cod';
 
 if ($name === '' || $phone === '' || $address === '' || $city === '' || $state === '' || $pincode === '') {
     $_SESSION['flash_error'] = 'Please fill all required fields';
-    header('Location: /checkout.php'); exit;
+    header('Location: ' . base_url('checkout.php')); exit;
 }
 
 $cart = cart_get();
-if (empty($cart)) { $_SESSION['flash_error']='Cart is empty'; header('Location: /products.php'); exit; }
+if (empty($cart)) { $_SESSION['flash_error']='Cart is empty'; header('Location: ' . base_url('products.php')); exit; }
 
 $pdo = getPDO();
 try {
@@ -69,11 +69,11 @@ try {
 
     $pdo->commit();
     cart_clear();
-    header('Location: /order-success.php?id=' . $orderId);
+    header('Location: ' . base_url('order-success.php?id=' . $orderId));
     exit;
 } catch (Exception $e) {
     $pdo->rollBack();
     error_log('Order error: ' . $e->getMessage());
     $_SESSION['flash_error'] = 'Something went wrong while placing your order. Please try again.';
-    header('Location: /checkout.php'); exit;
+    header('Location: ' . base_url('checkout.php')); exit;
 }

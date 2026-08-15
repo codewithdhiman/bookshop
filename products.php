@@ -42,9 +42,9 @@ $pages = (int)ceil($total / $perPage);
 
 ?>
 <div class="row">
-  <div class="col-12 d-flex justify-content-between align-items-center mb-3">
+    <div class="col-12 d-flex justify-content-between align-items-center mb-3">
     <h3>Books</h3>
-    <form class="d-flex" method="get" action="/products.php">
+    <form class="d-flex" method="get" action="<?= base_url('products.php') ?>">
       <input name="search" value="<?= esc($_GET['search'] ?? '') ?>" class="form-control form-control-sm me-2" placeholder="Search by title or author">
       <button class="btn btn-sm btn-outline-secondary">Search</button>
     </form>
@@ -57,7 +57,7 @@ $pages = (int)ceil($total / $perPage);
   <?php foreach ($products as $p): ?>
     <div class="col-md-3 mb-3">
       <div class="card h-100">
-        <img src="/public/uploads/<?= esc($p['cover_image'] ?? 'placeholder.png') ?>" class="card-img-top" alt="<?= esc($p['title']) ?>">
+        <img src="<?= base_url('public/uploads/' . ($p['cover_image'] ?? 'placeholder.png')) ?>" class="card-img-top" alt="<?= esc($p['title']) ?>">
         <div class="card-body d-flex flex-column">
           <h5 class="product-title"><?= esc($p['title']) ?></h5>
           <p class="small muted mb-1"><?= esc($p['author']) ?></p>
@@ -76,9 +76,9 @@ $pages = (int)ceil($total / $perPage);
               <span class="badge bg-success">In Stock: <?= $p['stock'] ?></span>
             <?php endif; ?>
             <div class="mt-2">
-              <a href="/product.php?id=<?= $p['id'] ?>" class="btn btn-sm btn-outline-primary">View</a>
+              <a href="<?= base_url('product.php?id=' . $p['id']) ?>" class="btn btn-sm btn-outline-primary">View</a>
               <?php if ($p['stock'] > 0): ?>
-                <form method="post" action="/cart.php" class="d-inline">
+                <form method="post" action="<?= base_url('cart.php') ?>" class="d-inline">
                   <input type="hidden" name="action" value="add">
                   <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
                   <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">

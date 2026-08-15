@@ -11,8 +11,9 @@ Setup
 1. Copy the project to your web root (e.g., `d:/wamp/www/bookshop`).
 2. Import the database: using phpMyAdmin or mysql client, run `database/schema.sql`.
 3. Edit `config/database.php` to set `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`.
-4. Ensure `public/uploads/` is writable for image uploads.
-5. Visit `http://localhost/bookshop/`.
+4. If your app is in a subfolder (e.g., `/bookshop`), edit `BASE_URL` in `config/database.php` to match the folder (default: `/bookshop`).
+5. Ensure `public/uploads/` is writable for image uploads.
+6. Visit `http://localhost/bookshop/`.
 
 Admin
 - Default admin (sample) email: `admin@bookshop.local` password: `password` (change after import).

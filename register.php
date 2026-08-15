@@ -6,7 +6,7 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) { $errors[] = 'Invalid CSRF'; }
     [$ok, $msg] = register_user([ 'name'=>$_POST['name'] ?? '', 'email'=>$_POST['email'] ?? '', 'password'=>$_POST['password'] ?? '', 'phone'=>$_POST['phone'] ?? '' ]);
-    if ($ok) { $_SESSION['flash_success']=$msg; header('Location: /login.php'); exit; } else { $errors[] = $msg; }
+    if ($ok) { $_SESSION['flash_success']=$msg; header('Location: ' . base_url('login.php')); exit; } else { $errors[] = $msg; }
 }
 
 ?>
