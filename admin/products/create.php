@@ -8,6 +8,8 @@ $pdo = getPDO();
 $cats = $pdo->query('SELECT * FROM categories WHERE status = 1')->fetchAll();
 $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // ensure tax_rate column exists
+    ensure_column_exists($pdo, 'products', 'tax_rate', 'tax_rate DECIMAL(5,2) NULL DEFAULT NULL');
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) { $errors[]='Invalid CSRF'; }
     $title = trim($_POST['title'] ?? '');
     $category_id = (int)($_POST['category_id'] ?? 0);
@@ -23,8 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (empty($errors)) {
         $slug = slugify($title) . '-' . bin2hex(random_bytes(3));
-        $stmt = $pdo->prepare('INSERT INTO products (category_id, title, slug, isbn, author, publisher, description, price, discount_price, stock, cover_image, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-        $stmt->execute([$category_id, $title, $slug, $_POST['isbn'] ?? null, $_POST['author'] ?? null, $_POST['publisher'] ?? null, $_POST['description'] ?? null, $price, $discount, $stock, $imageName, isset($_POST['status'])?1:0]);
+        $tax_rate = $_POST['tax_rate'] !== '' ? (float)$_POST['tax_rate'] : null;
+        $stmt = $pdo->prepare('INSERT INTO products (category_id, title, slug, isbn, author, publisher, description, price, discount_price, stock, cover_image, status, tax_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt->execute([$category_id, $title, $slug, $_POST['isbn'] ?? null, $_POST['author'] ?? null, $_POST['publisher'] ?? null, $_POST['description'] ?? null, $price, $discount, $stock, $imageName, isset($_POST['status'])?1:0, $tax_rate]);
         header('Location: index.php'); exit;
     }
 }
@@ -41,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="mb-3"><label class="form-label">Price</label><input name="price" type="number" step="0.01" class="form-control" required></div>
   <div class="mb-3"><label class="form-label">Discount Price</label><input name="discount_price" type="number" step="0.01" class="form-control"></div>
   <div class="mb-3"><label class="form-label">Stock</label><input name="stock" type="number" class="form-control" value="0"></div>
+    <div class="mb-3"><label class="form-label">Tax Rate (%)</label><input name="tax_rate" type="number" step="0.01" class="form-control" placeholder="Leave empty to use global tax"></div>
   <div class="mb-3"><label class="form-label">Cover Image</label><input name="cover_image" type="file" accept="image/*" class="form-control"></div>
   <div class="mb-3 form-check"><input type="checkbox" name="status" class="form-check-input" id="status" checked><label for="status" class="form-check-label">Active</label></div>
   <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="4"></textarea></div>

@@ -17,6 +17,19 @@ $user = $_SESSION['user'] ?? null;
       </ul>
       <ul class="navbar-nav ms-auto">
         <li class="nav-item"><a class="nav-link" href="<?= base_url('cart.php') ?>">Cart (<?= array_sum($_SESSION['cart'] ?? []) ?: 0 ?>)</a></li>
+        <?php if ($user && ($user['role'] ?? '') === 'admin'): ?>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="adminMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminMenu">
+              <li><a class="dropdown-item" href="<?= base_url('admin/index.php') ?>">Dashboard</a></li>
+              <li><a class="dropdown-item" href="<?= base_url('admin/products/index.php') ?>">Products</a></li>
+              <li><a class="dropdown-item" href="<?= base_url('admin/categories/index.php') ?>">Categories</a></li>
+              <li><a class="dropdown-item" href="<?= base_url('admin/orders/index.php') ?>">Orders</a></li>
+              <li><a class="dropdown-item" href="<?= base_url('admin/sales.php') ?>">Sales Report</a></li>
+              <li><a class="dropdown-item" href="<?= base_url('admin/tax.php') ?>">Tax Management</a></li>
+            </ul>
+          </li>
+        <?php endif; ?>
         <?php if ($user): ?>
             <li class="nav-item"><a class="nav-link" href="#">Hello, <?= esc($user['name']) ?></a></li>
             <li class="nav-item"><a class="nav-link" href="<?= base_url('logout.php') ?>">Logout</a></li>

@@ -9,7 +9,7 @@ if (empty($cart)) {
 
 $pdo = getPDO();
 $placeholders = implode(',', array_fill(0, count($cart), '?'));
-$stmt = $pdo->prepare("SELECT id, title, price, discount_price, stock FROM products WHERE id IN ($placeholders)");
+$stmt = $pdo->prepare("SELECT id, title, price, discount_price, stock, tax_rate FROM products WHERE id IN ($placeholders)");
 $stmt->execute(array_keys($cart));
 $rows = $stmt->fetchAll();
 $items = [];
@@ -24,7 +24,15 @@ foreach ($rows as $r) {
 }
 
 $shipping = shipping_charge_for($subtotal);
-$grand = $subtotal + $shipping;
+// determine tax: per-product tax if set, otherwise global tax_rate
+$globalTax = (float)get_setting($pdo, 'tax_rate', '0');
+$taxTotal = 0.0;
+foreach ($items as &$it) {
+  $taxRate = $it['product']['tax_rate'] !== null ? (float)$it['product']['tax_rate'] : $globalTax;
+  $it['tax'] = round($it['line'] * ($taxRate / 100), 2);
+  $taxTotal += $it['tax'];
+}
+$grand = $subtotal + $shipping + $taxTotal;
 
 ?>
 <div class="row">
@@ -75,6 +83,7 @@ $grand = $subtotal + $shipping;
       <?php endforeach; ?>
       <li class="list-group-item d-flex justify-content-between"><strong>Subtotal</strong><span><?= currency_format($subtotal) ?></span></li>
       <li class="list-group-item d-flex justify-content-between"><strong>Shipping</strong><span><?= currency_format($shipping) ?></span></li>
+      <li class="list-group-item d-flex justify-content-between"><strong>Tax</strong><span><?= currency_format($taxTotal) ?></span></li>
       <li class="list-group-item d-flex justify-content-between"><strong>Total</strong><span><?= currency_format($grand) ?></span></li>
     </ul>
   </div>

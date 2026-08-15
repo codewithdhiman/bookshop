@@ -20,7 +20,7 @@ $items = $pdo->prepare('SELECT * FROM order_items WHERE order_id = ?'); $items->
   </div>
   <div class="col-md-6">
     <h5>Summary</h5>
-    <p>Subtotal: <?= currency_format($order['subtotal']) ?><br>Shipping: <?= currency_format($order['shipping_charge']) ?><br><strong>Total: <?= currency_format($order['total_amount']) ?></strong></p>
+    <p>Subtotal: <?= currency_format($order['subtotal']) ?><br>Shipping: <?= currency_format($order['shipping_charge']) ?><br>Tax: <?= currency_format($order['tax_amount'] ?? 0) ?><br><strong>Total: <?= currency_format($order['total_amount']) ?></strong></p>
   </div>
 </div>
 <h5>Items</h5>

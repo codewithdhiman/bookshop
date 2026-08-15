@@ -24,13 +24,16 @@ if (empty($cart)) { $_SESSION['flash_error']='Cart is empty'; header('Location: 
 $pdo = getPDO();
 try {
     $pdo->beginTransaction();
+    // ensure orders.tax_amount column exists
+    ensure_column_exists($pdo, 'orders', 'tax_amount', 'tax_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00');
     // load products and validate stock
     $placeholders = implode(',', array_fill(0, count($cart), '?'));
-    $stmt = $pdo->prepare("SELECT id, title, price, discount_price, stock FROM products WHERE id IN ($placeholders) FOR UPDATE");
+    $stmt = $pdo->prepare("SELECT id, title, price, discount_price, stock, tax_rate FROM products WHERE id IN ($placeholders) FOR UPDATE");
     $stmt->execute(array_keys($cart));
     $rows = $stmt->fetchAll();
     $subtotal = 0;
     $items = [];
+    $taxTotal = 0.0;
     foreach ($rows as $r) {
         $pid = $r['id'];
         $qty = $cart[$pid] ?? 0;
@@ -40,10 +43,13 @@ try {
         $line = $price * $qty;
         $items[] = ['product_id'=>$pid,'name'=>$r['title'],'price'=>$price,'quantity'=>$qty,'total'=>$line];
         $subtotal += $line;
+        $taxRate = $r['tax_rate'] !== null ? (float)$r['tax_rate'] : (float)get_setting($pdo, 'tax_rate', '0');
+        $taxForLine = round($line * ($taxRate / 100), 2);
+        $taxTotal += $taxForLine;
     }
 
     $shipping = shipping_charge_for($subtotal);
-    $total = $subtotal + $shipping;
+    $total = $subtotal + $shipping + $taxTotal;
 
     // generate order number
     $date = date('Ymd');
@@ -54,9 +60,9 @@ try {
     $orderNumber = 'ORD-' . date('Ymd') . '-' . $seq;
 
     // insert order
-    $stmt = $pdo->prepare('INSERT INTO orders (user_id, order_number, subtotal, discount, shipping_charge, total_amount, payment_method, payment_status, order_status, shipping_name, shipping_phone, shipping_address, shipping_city, shipping_state, shipping_pincode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    $stmt = $pdo->prepare('INSERT INTO orders (user_id, order_number, subtotal, discount, shipping_charge, tax_amount, total_amount, payment_method, payment_status, order_status, shipping_name, shipping_phone, shipping_address, shipping_city, shipping_state, shipping_pincode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
     $userId = $_SESSION['user']['id'] ?? null;
-    $stmt->execute([$userId, $orderNumber, $subtotal, 0.00, $shipping, $total, $payment_method, $payment_method === 'cod' ? 'pending' : 'pending', 'pending', $name, $phone, $address, $city, $state, $pincode]);
+    $stmt->execute([$userId, $orderNumber, $subtotal, 0.00, $shipping, $taxTotal, $total, $payment_method, $payment_method === 'cod' ? 'pending' : 'pending', 'pending', $name, $phone, $address, $city, $state, $pincode]);
     $orderId = (int)$pdo->lastInsertId();
 
     // insert order items and reduce stock

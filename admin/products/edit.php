@@ -11,6 +11,8 @@ $product = $pdo->prepare('SELECT * FROM products WHERE id = ? LIMIT 1'); $produc
 $cats = $pdo->query('SELECT * FROM categories WHERE status = 1')->fetchAll();
 $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  // ensure tax_rate column exists
+  ensure_column_exists($pdo, 'products', 'tax_rate', 'tax_rate DECIMAL(5,2) NULL DEFAULT NULL');
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) { $errors[]='Invalid CSRF'; }
     $title = trim($_POST['title'] ?? '');
     $category_id = (int)($_POST['category_id'] ?? 0);
@@ -25,8 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($err) $errors[] = $err; else $imageName = $fn;
     }
     if (empty($errors)) {
-        $stmt = $pdo->prepare('UPDATE products SET category_id=?, title=?, isbn=?, author=?, publisher=?, description=?, price=?, discount_price=?, stock=?, cover_image=?, status=? WHERE id=?');
-        $stmt->execute([$category_id, $title, $_POST['isbn'] ?? null, $_POST['author'] ?? null, $_POST['publisher'] ?? null, $_POST['description'] ?? null, $price, $discount, $stock, $imageName, isset($_POST['status'])?1:0, $id]);
+      $tax_rate = $_POST['tax_rate'] !== '' ? (float)$_POST['tax_rate'] : null;
+      $stmt = $pdo->prepare('UPDATE products SET category_id=?, title=?, isbn=?, author=?, publisher=?, description=?, price=?, discount_price=?, stock=?, cover_image=?, status=?, tax_rate=? WHERE id=?');
+      $stmt->execute([$category_id, $title, $_POST['isbn'] ?? null, $_POST['author'] ?? null, $_POST['publisher'] ?? null, $_POST['description'] ?? null, $price, $discount, $stock, $imageName, isset($_POST['status'])?1:0, $tax_rate, $id]);
         header('Location: index.php'); exit;
     }
 }
@@ -44,6 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="mb-3"><label class="form-label">Discount Price</label><input name="discount_price" type="number" step="0.01" class="form-control" value="<?= esc($p['discount_price']) ?>"></div>
   <div class="mb-3"><label class="form-label">Stock</label><input name="stock" type="number" class="form-control" value="<?= $p['stock'] ?>"></div>
     <div class="mb-3"><label class="form-label">Cover Image</label><input name="cover_image" type="file" accept="image/*" class="form-control"><div class="mt-2"><?php if ($p['cover_image']): ?><img src="<?= base_url('public/uploads/' . $p['cover_image']) ?>" style="height:80px"><?php endif; ?></div></div>
+  <div class="mb-3"><label class="form-label">Tax Rate (%)</label><input name="tax_rate" type="number" step="0.01" class="form-control" value="<?= isset($p['tax_rate'])?esc($p['tax_rate']):'' ?>" placeholder="Leave empty to use global tax"></div>
   <div class="mb-3 form-check"><input type="checkbox" name="status" class="form-check-input" id="status" <?= $p['status']?'checked':'' ?>><label for="status" class="form-check-label">Active</label></div>
   <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="4"><?= esc($p['description']) ?></textarea></div>
   <button class="btn btn-primary">Save</button>
