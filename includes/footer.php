@@ -1,0 +1,13 @@
+<?php
+// includes/footer.php
+?>
+</div>
+<footer class="bg-light mt-5 py-4">
+    <div class="container text-center small">
+        &copy; <?= date('Y') ?> Bookshop. All rights reserved.
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/public/js/app.js"></script>
+</body>
+</html>
