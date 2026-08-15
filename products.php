@@ -42,51 +42,91 @@ $pages = (int)ceil($total / $perPage);
 
 ?>
 <div class="row product-grid">
-    <div class="col-12 d-flex justify-content-between align-items-center mb-3">
+  <div class="col-12 d-flex justify-content-between align-items-center mb-3">
     <h3>Books</h3>
-    <form class="d-flex" method="get" action="<?= base_url('products.php') ?>">
-      <input name="search" value="<?= esc($_GET['search'] ?? '') ?>" class="form-control form-control-sm me-2" placeholder="Search by title or author">
-      <button class="btn btn-sm btn-outline-secondary">Search</button>
-    </form>
+    <div class="d-flex align-items-center">
+      <button id="filters-open" class="btn btn-sm btn-outline-secondary d-md-none me-2">Filters</button>
+      <form class="d-flex d-none d-md-flex" method="get" action="<?= base_url('products.php') ?>">
+        <input name="search" value="<?= esc($_GET['search'] ?? '') ?>" class="form-control form-control-sm me-2" placeholder="Search by title or author">
+        <button class="btn btn-sm btn-outline-secondary">Search</button>
+      </form>
+    </div>
   </div>
+
+  <!-- Offcanvas filters -->
+  <div id="filters-offcanvas" class="filters-offcanvas">
+    <div class="offcanvas-header d-flex justify-content-between align-items-center">
+      <strong>Filters</strong>
+      <button id="filters-close" class="btn btn-sm btn-light">Close</button>
+    </div>
+    <div class="offcanvas-body">
+      <form method="get" action="<?= base_url('products.php') ?>">
+        <div class="mb-2">
+          <label class="form-label small">Category</label>
+          <select name="category" class="form-select form-select-sm">
+            <option value="">All</option>
+            <?php foreach ($pdo->query('SELECT * FROM categories WHERE status=1')->fetchAll() as $cat): ?>
+              <option value="<?= esc($cat['slug']) ?>" <?= (($_GET['category'] ?? '')===$cat['slug'])? 'selected':'' ?>><?= esc($cat['name']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label small">Sort</label>
+          <select name="sort" class="form-select form-select-sm">
+            <option value="">Default</option>
+            <option value="price_low" <?= (($_GET['sort'] ?? '')==='price_low')? 'selected':'' ?>>Price: Low to High</option>
+            <option value="price_high" <?= (($_GET['sort'] ?? '')==='price_high')? 'selected':'' ?>>Price: High to Low</option>
+            <option value="newest" <?= (($_GET['sort'] ?? '')==='newest')? 'selected':'' ?>>Newest</option>
+          </select>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-primary btn-sm">Apply</button>
+          <a href="<?= base_url('products.php') ?>" class="btn btn-sm btn-outline-secondary">Reset</a>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div id="filters-backdrop" class="filters-backdrop"></div>
 
   <?php if (empty($products)): ?>
     <div class="col-12">No products found.</div>
   <?php endif; ?>
 
   <?php foreach ($products as $p): ?>
-    <div class="col-md-3 mb-3">
-      <div class="card h-100">
-        <img src="<?= base_url('public/uploads/' . ($p['cover_image'] ?? 'placeholder.png')) ?>" class="card-img-top" alt="<?= esc($p['title']) ?>">
-        <div class="card-body d-flex flex-column">
-          <h5 class="product-title"><?= esc($p['title']) ?></h5>
-          <p class="small muted mb-1"><?= esc($p['author']) ?></p>
-          <p class="mb-1">
-            <?php if (!empty($p['discount_price'])): ?>
-              <span class="fw-bold"><?= currency_format($p['discount_price']) ?></span>
-              <small class="text-muted text-decoration-line-through ms-2"><?= currency_format($p['price']) ?></small>
-            <?php else: ?>
-              <span class="fw-bold"><?= currency_format($p['price']) ?></span>
-            <?php endif; ?>
-          </p>
-          <div class="mt-auto">
-            <?php if ($p['stock'] <= 0): ?>
-              <span class="badge bg-danger">Out of Stock</span>
-            <?php else: ?>
-              <span class="badge bg-success">In Stock: <?= $p['stock'] ?></span>
-            <?php endif; ?>
-            <div class="mt-2">
-              <a href="<?= base_url('product.php?id=' . $p['id']) ?>" class="btn btn-sm btn-outline-primary">View</a>
-              <?php if ($p['stock'] > 0): ?>
-                <form method="post" action="<?= base_url('cart.php') ?>" class="d-inline">
-                  <input type="hidden" name="action" value="add">
-                  <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
-                  <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                  <button class="btn btn-sm btn-primary">Add to Cart</button>
-                </form>
-              <?php endif; ?>
+    <div class="col-6 col-md-4 col-lg-3 mb-3">
+      <div class="card h-100 product-card">
+        <a href="<?= base_url('product.php?id=' . $p['id']) ?>" class="text-decoration-none text-reset">
+          <img src="<?= base_url('public/uploads/' . ($p['cover_image'] ?? 'placeholder.png')) ?>" alt="<?= esc($p['title']) ?>">
+          <div class="card-body d-flex flex-column">
+            <h5 class="product-title"><?= esc($p['title']) ?></h5>
+            <div class="product-meta small muted"><?= esc($p['author']) ?></div>
+            <div class="mt-auto d-flex justify-content-between align-items-center">
+              <div>
+                <?php if (!empty($p['discount_price'])): ?>
+                  <div class="fw-bold text-danger"><?= currency_format($p['discount_price']) ?></div>
+                  <div class="small text-muted text-decoration-line-through"><?= currency_format($p['price']) ?></div>
+                <?php else: ?>
+                  <div class="fw-bold"><?= currency_format($p['price']) ?></div>
+                <?php endif; ?>
+              </div>
+              <div>
+                <?php if ($p['stock'] <= 0): ?>
+                  <span class="badge bg-danger">Out</span>
+                <?php else: ?>
+                  <span class="badge bg-success">In</span>
+                <?php endif; ?>
+              </div>
             </div>
           </div>
+        </a>
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <form method="post" action="<?= base_url('cart.php') ?>" class="d-flex gap-2">
+            <input type="hidden" name="action" value="add">
+            <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
+            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
+            <button class="btn btn-sm btn-outline-primary flex-grow-1">View</button>
+            <button class="btn btn-sm btn-primary" <?= $p['stock']<=0? 'disabled':'' ?>>Add</button>
+          </form>
         </div>
       </div>
     </div>

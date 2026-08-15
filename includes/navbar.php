@@ -35,6 +35,18 @@ $user = $_SESSION['user'] ?? null;
           </a>
         </li>
 
+        <li class="nav-item dropdown me-2">
+          <button class="btn btn-outline-secondary btn-sm dropdown-toggle" id="themeMenuButton" data-bs-toggle="dropdown" aria-expanded="false">Theme</button>
+          <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="themeMenuButton" style="min-width:220px">
+            <li><button class="dropdown-item theme-select d-flex align-items-center" data-theme="classic"><span class="me-2" style="width:36px;height:12px;border-radius:3px;background:linear-gradient(90deg,#F8F4EC,#FFFFFF);"></span> Classic Ivory</button></li>
+            <li><button class="dropdown-item theme-select d-flex align-items-center" data-theme="midnight"><span class="me-2" style="width:36px;height:12px;border-radius:3px;background:linear-gradient(90deg,#0B1220,#111C2E);"></span> Midnight Library</button></li>
+            <li><button class="dropdown-item theme-select d-flex align-items-center" data-theme="sage"><span class="me-2" style="width:36px;height:12px;border-radius:3px;background:linear-gradient(90deg,#F4F1E8,#FFFFFF);"></span> Sage & Paper</button></li>
+            <li><button class="dropdown-item theme-select d-flex align-items-center" data-theme="burgundy"><span class="me-2" style="width:36px;height:12px;border-radius:3px;background:linear-gradient(90deg,#FAF3EA,#FFFFFF);"></span> Burgundy Reading Room</button></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><button class="dropdown-item theme-select d-flex align-items-center" data-theme="system">System Default</button></li>
+          </ul>
+        </li>
+
         <?php if ($user && ($user['role'] ?? '') === 'admin'): ?>
           <li class="nav-item dropdown me-2">
             <a class="nav-link dropdown-toggle" href="#" id="adminMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>

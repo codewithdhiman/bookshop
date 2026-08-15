@@ -116,4 +116,81 @@ document.addEventListener('DOMContentLoaded', function(){
         // Close when nav link inside sidebar clicked (mobile)
         sidebar.addEventListener('click', function(e){ if (e.target.closest('.nav-link')) close(); });
     })();
+
+    // Theme init and selector
+    (function(){
+        function applyTheme(theme){
+            try{
+                if (theme === 'system'){
+                    localStorage.setItem('bookshop-theme','system');
+                    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    theme = prefersDark ? 'midnight' : 'classic';
+                } else {
+                    localStorage.setItem('bookshop-theme', theme);
+                }
+                document.documentElement.setAttribute('data-theme', theme);
+            }catch(e){console.warn(e)}
+        }
+
+        // Wire up selector buttons
+        document.querySelectorAll('.theme-select').forEach(function(btn){
+            btn.addEventListener('click', function(e){
+                var t = btn.getAttribute('data-theme');
+                applyTheme(t);
+            });
+        });
+
+        // Ensure theme is applied (in case header inline script didn't run)
+        try{
+            var s = localStorage.getItem('bookshop-theme');
+            if (!s) s = 'classic';
+            applyTheme(s);
+        }catch(e){}
+    })();
+
+    // Offcanvas filters (mobile)
+    (function(){
+        var openBtn = document.getElementById('filters-open');
+        var off = document.getElementById('filters-offcanvas');
+        var backdrop = document.getElementById('filters-backdrop');
+        var closeBtn = document.getElementById('filters-close');
+        if (!off) return;
+        function open(){ off.classList.add('open'); if (backdrop) backdrop.classList.add('show'); document.body.style.overflow='hidden'; }
+        function close(){ off.classList.remove('open'); if (backdrop) backdrop.classList.remove('show'); document.body.style.overflow=''; }
+        if (openBtn) openBtn.addEventListener('click', open);
+        if (closeBtn) closeBtn.addEventListener('click', close);
+        if (backdrop) backdrop.addEventListener('click', close);
+        document.addEventListener('keydown', function(e){ if (e.key==='Escape' && off.classList.contains('open')) close(); });
+    })();
+
+    // PDP mobile sticky add-to-cart
+    (function(){
+        var detail = document.querySelector('.product-detail');
+        var sticky = document.querySelector('.pdp-sticky');
+        var addForm = document.querySelector('.product-detail form');
+        if (!detail || !sticky || !addForm) return;
+        function update(){
+            var rect = addForm.getBoundingClientRect();
+            // if the form is within viewport bottom area, hide sticky
+            if (rect.bottom <= window.innerHeight && rect.top >= 0) {
+                sticky.style.transform = 'translateY(110%)';
+            } else {
+                sticky.style.transform = '';
+            }
+        }
+        update();
+        window.addEventListener('scroll', update);
+        window.addEventListener('resize', update);
+        // wire sticky form submission
+        sticky.querySelectorAll('button[type="submit"]').forEach(function(b){
+            b.addEventListener('click', function(e){
+                e.preventDefault();
+                // copy inputs from sticky to real form
+                var qty = sticky.querySelector('input[name="quantity"]')?.value || 1;
+                var qInput = addForm.querySelector('input[name="quantity"]');
+                if (qInput) qInput.value = qty;
+                addForm.querySelector('button[type="submit"]').click();
+            });
+        });
+    })();
 });
