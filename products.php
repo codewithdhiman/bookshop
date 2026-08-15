@@ -41,7 +41,7 @@ $total = (int)$pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
 $pages = (int)ceil($total / $perPage);
 
 ?>
-<div class="row">
+<div class="row product-grid">
     <div class="col-12 d-flex justify-content-between align-items-center mb-3">
     <h3>Books</h3>
     <form class="d-flex" method="get" action="<?= base_url('products.php') ?>">

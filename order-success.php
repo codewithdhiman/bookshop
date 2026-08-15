@@ -3,7 +3,6 @@ require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/config/database.php';
 
 $id = (int)($_GET['id'] ?? 0);
-$
 if (!$id) { header('Location: ' . base_url()); exit; }
 $pdo = getPDO();
 $stmt = $pdo->prepare('SELECT * FROM orders WHERE id = ? LIMIT 1');
