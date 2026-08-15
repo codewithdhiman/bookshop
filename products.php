@@ -41,8 +41,8 @@ $total = (int)$pdo->query('SELECT FOUND_ROWS()')->fetchColumn();
 $pages = (int)ceil($total / $perPage);
 
 ?>
-<div class="row product-grid">
-  <div class="col-12 d-flex justify-content-between align-items-center mb-3">
+<div class="products-grid">
+  <div class="page-header grid-full d-flex justify-content-between align-items-center mb-3">
     <h3>Books</h3>
     <div class="d-flex align-items-center">
       <button id="filters-open" class="btn btn-sm btn-outline-secondary d-md-none me-2">Filters</button>
@@ -89,11 +89,17 @@ $pages = (int)ceil($total / $perPage);
   <div id="filters-backdrop" class="filters-backdrop"></div>
 
   <?php if (empty($products)): ?>
-    <div class="col-12">No products found.</div>
+    <div class="grid-full empty-state">
+      <div class="card p-4 text-center">
+        <h4>No books found</h4>
+        <p class="text-muted">Try searching for another title, author, or category.</p>
+        <a href="<?= base_url('products.php') ?>" class="btn btn-outline-primary">Browse All Books</a>
+      </div>
+    </div>
   <?php endif; ?>
 
   <?php foreach ($products as $p): ?>
-    <div class="col-6 col-md-4 col-lg-3 mb-3">
+    <div class="product-item">
       <div class="card h-100 product-card">
         <a href="<?= base_url('product.php?id=' . $p['id']) ?>" class="text-decoration-none text-reset">
           <img src="<?= base_url('public/uploads/' . ($p['cover_image'] ?? 'placeholder.png')) ?>" alt="<?= esc($p['title']) ?>">
@@ -124,15 +130,15 @@ $pages = (int)ceil($total / $perPage);
             <input type="hidden" name="action" value="add">
             <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
             <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-            <button class="btn btn-sm btn-outline-primary flex-grow-1">View</button>
-            <button class="btn btn-sm btn-primary" <?= $p['stock']<=0? 'disabled':'' ?>>Add</button>
+            <a href="<?= base_url('product.php?id=' . $p['id']) ?>" class="btn btn-sm btn-outline-primary flex-grow-1">View</a>
+            <button type="submit" class="btn btn-sm btn-primary" <?= $p['stock']<=0? 'disabled':'' ?>>Add</button>
           </form>
         </div>
       </div>
     </div>
   <?php endforeach; ?>
 
-  <div class="col-12">
+  <div class="grid-full">
     <nav>
       <ul class="pagination">
         <?php for ($i=1;$i<=$pages;$i++): ?>
