@@ -5,7 +5,13 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (!verify_csrf_token($_POST['csrf_token'] ?? '')) { $errors[] = 'Invalid CSRF'; }
   [$ok, $msg] = login_user($_POST['email'] ?? '', $_POST['password'] ?? '');
-  if ($ok) { header('Location: ' . base_url()); exit; } else { $errors[] = $msg; }
+  if ($ok === true) {
+    header('Location: ' . base_url()); exit;
+  } elseif ($ok === '2fa_required' || $ok === '2fa') {
+    // redirect to 2FA verification page
+    header('Location: ' . base_url('verify-2fa.php'));
+    exit;
+  } else { $errors[] = $msg; }
 }
 require_once __DIR__ . '/includes/header.php';
 ?>

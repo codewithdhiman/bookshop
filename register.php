@@ -6,7 +6,12 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) { $errors[] = 'Invalid CSRF'; }
     [$ok, $msg] = register_user([ 'name'=>$_POST['name'] ?? '', 'email'=>$_POST['email'] ?? '', 'password'=>$_POST['password'] ?? '', 'phone'=>$_POST['phone'] ?? '' ]);
-    if ($ok) { $_SESSION['flash_success']=$msg; header('Location: ' . base_url('login.php')); exit; } else { $errors[] = $msg; }
+    if ($ok) {
+      // After registration, start 2FA setup flow: store email and redirect to setup page
+      $_SESSION['twofactor_setup_email'] = $_POST['email'] ?? '';
+      header('Location: ' . base_url('setup-2fa.php'));
+      exit;
+    } else { $errors[] = $msg; }
 }
 
 require_once __DIR__ . '/includes/header.php';

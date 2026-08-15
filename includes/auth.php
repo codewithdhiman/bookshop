@@ -38,6 +38,14 @@ function login_user(string $email, string $password): array
     if (!password_verify($password, $user['password'])) {
         return [false, 'Invalid credentials'];
     }
+    // If user has two-factor enabled, start pre-2FA flow
+    if (!empty($user['two_factor_enabled'])) {
+        // set temporary session state and redirect to verification
+        $_SESSION['pre_2fa_user_id'] = $user['id'];
+        $_SESSION['pre_2fa_time'] = time();
+        return ['2fa_required', 'Two-factor required'];
+    }
+
     // set session
     session_regenerate_id(true);
     $_SESSION['user'] = [
