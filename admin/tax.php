@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/admin_auth.php';
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/admin_header.php';
 
 require_admin();
 $pdo = getPDO();
@@ -21,12 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 $tax_rate = (float)get_setting($pdo, 'tax_rate', '0');
 ?>
-<h3>Tax Management</h3>
-<form method="post" class="mb-3">
-  <div class="mb-3"><label class="form-label">Global Tax Rate (%)</label>
-    <input name="tax_rate" type="number" step="0.01" class="form-control" value="<?= esc($tax_rate) ?>">
+<h3 class="mb-3">Tax Management</h3>
+<form method="post">
+  <div class="admin-card p-3">
+    <div class="mb-3"><label class="form-label">Global Tax Rate (%)</label>
+      <input name="tax_rate" type="number" step="0.01" class="form-control" value="<?= esc($tax_rate) ?>">
+    </div>
+    <div class="d-grid"><button class="btn btn-primary">Save</button></div>
   </div>
-  <button class="btn btn-primary">Save</button>
 </form>
 
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../includes/admin_footer.php'; ?>

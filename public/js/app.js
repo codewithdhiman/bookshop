@@ -44,4 +44,18 @@ document.addEventListener('DOMContentLoaded', function(){
         setTimeout(function(){ t.classList.add('show'); }, 10);
         setTimeout(function(){ t.remove(); }, opts.duration || 4000);
     }
+
+    // Image preview for file inputs with data-preview attribute
+    document.body.addEventListener('change', function(e){
+        var input = e.target;
+        if (input.type === 'file' && input.dataset.preview) {
+            var file = input.files && input.files[0];
+            var img = document.querySelector(input.dataset.preview);
+            if (!img) return;
+            if (!file) { img.src = ''; img.style.display = 'none'; return; }
+            var reader = new FileReader();
+            reader.onload = function(ev){ img.src = ev.target.result; img.style.display = 'block'; };
+            reader.readAsDataURL(file);
+        }
+    });
 });

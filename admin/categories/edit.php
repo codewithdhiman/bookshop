@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/admin_auth.php';
 require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/admin_header.php';
 
 require_admin();
 $pdo = getPDO();
@@ -21,14 +21,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<h3>Edit Category</h3>
+<h3 class="mb-3">Edit Category</h3>
 <?php foreach ($errors as $e): ?> <div class="alert alert-danger"><?= esc($e) ?></div> <?php endforeach; ?>
 <form method="post">
   <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-  <div class="mb-3"><label class="form-label">Name</label><input name="name" class="form-control" required value="<?= esc($c['name']) ?>"></div>
-  <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="3"><?= esc($c['description']) ?></textarea></div>
-  <div class="mb-3 form-check"><input type="checkbox" name="status" class="form-check-input" id="status" <?= $c['status']?'checked':'' ?>><label for="status" class="form-check-label">Active</label></div>
-  <button class="btn btn-primary">Save</button>
+  <div class="admin-card p-3">
+    <div class="mb-3"><label class="form-label">Name</label><input name="name" class="form-control" required value="<?= esc($c['name']) ?>"></div>
+    <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="3"><?= esc($c['description']) ?></textarea></div>
+    <div class="mb-3 form-check"><input type="checkbox" name="status" class="form-check-input" id="status" <?= $c['status']?'checked':'' ?>><label for="status" class="form-check-label">Active</label></div>
+    <div class="d-grid"><button class="btn btn-primary">Save</button></div>
+  </div>
 </form>
 
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/admin_footer.php'; ?>

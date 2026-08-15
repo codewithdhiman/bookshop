@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/admin_auth.php';
 require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../includes/header.php';
+require_once __DIR__ . '/../../includes/admin_header.php';
 
 require_admin();
 $pdo = getPDO();
@@ -34,23 +34,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<h3>Edit Product</h3>
+<h3 class="mb-3">Edit Product</h3>
 <?php foreach ($errors as $e): ?> <div class="alert alert-danger"><?= esc($e) ?></div> <?php endforeach; ?>
 <form method="post" enctype="multipart/form-data">
   <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-  <div class="mb-3"><label class="form-label">Title</label><input name="title" class="form-control" required value="<?= esc($p['title']) ?>"></div>
-  <div class="mb-3"><label class="form-label">Category</label><select name="category_id" class="form-select" required><option value="">Select</option><?php foreach($cats as $c): ?><option value="<?= $c['id'] ?>" <?= $c['id']==$p['category_id']?'selected':'' ?>><?= esc($c['name']) ?></option><?php endforeach; ?></select></div>
-  <div class="mb-3"><label class="form-label">Author</label><input name="author" class="form-control" value="<?= esc($p['author']) ?>"></div>
-  <div class="mb-3"><label class="form-label">Publisher</label><input name="publisher" class="form-control" value="<?= esc($p['publisher']) ?>"></div>
-  <div class="mb-3"><label class="form-label">ISBN</label><input name="isbn" class="form-control" value="<?= esc($p['isbn']) ?>"></div>
-  <div class="mb-3"><label class="form-label">Price</label><input name="price" type="number" step="0.01" class="form-control" required value="<?= esc($p['price']) ?>"></div>
-  <div class="mb-3"><label class="form-label">Discount Price</label><input name="discount_price" type="number" step="0.01" class="form-control" value="<?= esc($p['discount_price']) ?>"></div>
-  <div class="mb-3"><label class="form-label">Stock</label><input name="stock" type="number" class="form-control" value="<?= $p['stock'] ?>"></div>
-    <div class="mb-3"><label class="form-label">Cover Image</label><input name="cover_image" type="file" accept="image/*" class="form-control"><div class="mt-2"><?php if ($p['cover_image']): ?><img src="<?= base_url('public/uploads/' . $p['cover_image']) ?>" style="height:80px"><?php endif; ?></div></div>
-  <div class="mb-3"><label class="form-label">Tax Rate (%)</label><input name="tax_rate" type="number" step="0.01" class="form-control" value="<?= isset($p['tax_rate'])?esc($p['tax_rate']):'' ?>" placeholder="Leave empty to use global tax"></div>
-  <div class="mb-3 form-check"><input type="checkbox" name="status" class="form-check-input" id="status" <?= $p['status']?'checked':'' ?>><label for="status" class="form-check-label">Active</label></div>
-  <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="4"><?= esc($p['description']) ?></textarea></div>
-  <button class="btn btn-primary">Save</button>
+  <div class="row">
+    <div class="col-md-8">
+      <div class="admin-card p-3 mb-3">
+        <div class="mb-3"><label class="form-label">Title</label><input name="title" class="form-control" required value="<?= esc($p['title']) ?>"></div>
+        <div class="mb-3"><label class="form-label">Category</label><select name="category_id" class="form-select" required><option value="">Select</option><?php foreach($cats as $c): ?><option value="<?= $c['id'] ?>" <?= $c['id']==$p['category_id']?'selected':'' ?>><?= esc($c['name']) ?></option><?php endforeach; ?></select></div>
+        <div class="row">
+          <div class="col-md-6 mb-3"><label class="form-label">Author</label><input name="author" class="form-control" value="<?= esc($p['author']) ?>"></div>
+          <div class="col-md-6 mb-3"><label class="form-label">Publisher</label><input name="publisher" class="form-control" value="<?= esc($p['publisher']) ?>"></div>
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3"><label class="form-label">ISBN</label><input name="isbn" class="form-control" value="<?= esc($p['isbn']) ?>"></div>
+          <div class="col-md-6 mb-3"><label class="form-label">Stock</label><input name="stock" type="number" class="form-control" value="<?= $p['stock'] ?>"></div>
+        </div>
+        <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="6"><?= esc($p['description']) ?></textarea></div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="admin-card p-3 mb-3">
+        <div class="mb-3"><label class="form-label">Price</label><input name="price" type="number" step="0.01" class="form-control" required value="<?= esc($p['price']) ?>"></div>
+        <div class="mb-3"><label class="form-label">Discount Price</label><input name="discount_price" type="number" step="0.01" class="form-control" value="<?= esc($p['discount_price']) ?>"></div>
+        <div class="mb-3"><label class="form-label">Tax Rate (%)</label><input name="tax_rate" type="number" step="0.01" class="form-control" value="<?= isset($p['tax_rate'])?esc($p['tax_rate']):'' ?>" placeholder="Leave empty to use global tax"></div>
+        <div class="mb-3">
+          <label class="form-label">Cover Image</label>
+          <input name="cover_image" type="file" accept="image/*" class="form-control" data-preview="#coverPreview">
+          <img id="coverPreview" src="<?= $p['cover_image'] ? base_url('public/uploads/' . $p['cover_image']) : '' ?>" alt="Preview" style="display:<?= $p['cover_image'] ? 'block' : 'none' ?>;margin-top:10px;width:100%;border-radius:8px;object-fit:cover">
+        </div>
+        <div class="mb-3 form-check"><input type="checkbox" name="status" class="form-check-input" id="status" <?= $p['status']?'checked':'' ?>><label for="status" class="form-check-label">Active</label></div>
+        <div class="d-grid"><button class="btn btn-primary">Save</button></div>
+      </div>
+    </div>
+  </div>
 </form>
 
-<?php require_once __DIR__ . '/../../includes/footer.php'; ?>
+<?php require_once __DIR__ . '/../../includes/admin_footer.php'; ?>
