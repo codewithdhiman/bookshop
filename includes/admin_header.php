@@ -21,6 +21,7 @@ require_once __DIR__ . '/functions.php';
       <a class="nav-link" href="<?= base_url('admin/users.php') ?>">Users</a>
         <a class="nav-link" href="<?= base_url('admin/products/index.php') ?>">Products</a>
         <a class="nav-link" href="<?= base_url('admin/categories/index.php') ?>">Categories</a>
+        <a class="nav-link" href="<?= base_url('admin/attributes/index.php') ?>">Attributes</a>
         <a class="nav-link" href="<?= base_url('admin/orders/index.php') ?>">Orders</a>
         <a class="nav-link" href="<?= base_url('admin/sales.php') ?>">Sales</a>
         <a class="nav-link" href="<?= base_url('admin/tax.php') ?>">Tax</a>

@@ -35,7 +35,6 @@ $products = $q->fetchAll();
               <img src="<?= base_url('public/uploads/' . ($p['cover_image'] ?? 'placeholder.png')) ?>" alt="" style="width:56px;height:78px;object-fit:cover;border-radius:6px">
               <div>
                 <div class="fw-bold"><?= esc($p['title']) ?></div>
-                <div class="small text-muted"><?= esc($p['author']) ?></div>
               </div>
             </div>
           </td>
