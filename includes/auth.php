@@ -54,6 +54,12 @@ function login_user(string $email, string $password): array
         'email' => $user['email'],
         'role' => $user['role']
     ];
+    // update last_login
+    try {
+        $pdo->prepare('UPDATE users SET last_login = NOW() WHERE id = ?')->execute([$user['id']]);
+    } catch (Exception $e) {
+        // ignore if column doesn't exist yet
+    }
     return [true, 'Logged in'];
 }
 

@@ -16,11 +16,9 @@ require_once __DIR__ . '/functions.php';
 <body>
   <div class="d-flex" style="min-height:100vh;gap:24px;padding:20px;background:var(--background)">
     <aside class="admin-sidebar" role="navigation" aria-label="Admin sidebar">
-      <div class="mb-4">
-        <a href="<?= base_url('admin/index.php') ?>" class="d-block mb-3" style="font-family:'Playfair Display',serif;font-size:1.25rem;color:var(--primary)">Bookshop Admin</a>
-      </div>
       <nav class="nav flex-column">
-        <a class="nav-link" href="<?= base_url('admin/index.php') ?>">Dashboard</a>
+      <a class="nav-link" href="<?= base_url('admin/index.php') ?>">Dashboard</a>
+      <a class="nav-link" href="<?= base_url('admin/users.php') ?>">Users</a>
         <a class="nav-link" href="<?= base_url('admin/products/index.php') ?>">Products</a>
         <a class="nav-link" href="<?= base_url('admin/categories/index.php') ?>">Categories</a>
         <a class="nav-link" href="<?= base_url('admin/orders/index.php') ?>">Orders</a>

@@ -33,6 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errors)) {
             // success: complete login
             session_regenerate_id(true);
             $_SESSION['user'] = [ 'id' => $user['id'], 'name' => $user['name'], 'email' => $user['email'], 'role' => $user['role'] ?? 'customer' ];
+            // update last_login
+            try { $pdo->prepare('UPDATE users SET last_login = NOW() WHERE id = ?')->execute([$user['id']]); } catch (Exception $e) {}
             // clear pre-2fa
             unset($_SESSION['pre_2fa_user_id']); unset($_SESSION['pre_2fa_time']); unset($_SESSION['pre_2fa_attempts']); unset($_SESSION['pre_2fa_block_until']);
             header('Location: ' . base_url()); exit;
@@ -50,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errors)) {
             tf_mark_recovery_code_used($pdo, $match);
             session_regenerate_id(true);
             $_SESSION['user'] = [ 'id' => $user['id'], 'name' => $user['name'], 'email' => $user['email'], 'role' => $user['role'] ?? 'customer' ];
+                try { $pdo->prepare('UPDATE users SET last_login = NOW() WHERE id = ?')->execute([$user['id']]); } catch (Exception $e) {}
             unset($_SESSION['pre_2fa_user_id']); unset($_SESSION['pre_2fa_time']); unset($_SESSION['pre_2fa_attempts']); unset($_SESSION['pre_2fa_block_until']);
             header('Location: ' . base_url()); exit;
         } else {

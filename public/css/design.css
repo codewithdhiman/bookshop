@@ -72,7 +72,7 @@ body{font-size:1rem;line-height:1.4}
 .container{padding:0 12px;max-width:100%}
 
 /* Make interactive targets thumb-friendly */
-button, .btn, .nav-link, .nav-icon {min-height:44px;min-width:44px}
+button, .btn, .nav-link, .nav-icon {min-height:44px;min-width:44px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}
 
 /* Product grid: mobile-first single column, expand via media queries */
 .product-grid{display:block;gap:1rem}
@@ -112,6 +112,7 @@ table.table{width:100%;border-collapse:collapse}
 
 /* Admin responsive: offcanvas sidebar on mobile */
 .admin-sidebar{position:relative;transition:transform .25s ease,opacity .25s ease}
+.admin-sidebar .nav-link{justify-content:flex-start}
 @media (max-width:991px){
   .admin-sidebar{position:fixed;left:0;top:0;bottom:0;width:280px;transform:translateX(-110%);z-index:1100;padding:1.5rem;background:var(--surface)}
   .admin-sidebar.open{transform:translateX(0);box-shadow:0 12px 40px rgba(11,27,43,0.2)}
@@ -263,7 +264,7 @@ p{color:var(--text-muted);line-height:1.55}
 .order-summary{background:var(--surface);border-radius:12px;padding:1rem;border:1px solid var(--border);box-shadow:0 6px 18px rgba(11,27,43,0.04)}
 
 /* Admin styles */
-.admin-sidebar{width:260px;background:var(--surface);border-radius:12px;padding:1rem;border:1px solid var(--border);height:100%}
+.admin-sidebar{width:136px;background:var(--surface);border-radius:12px;padding:1rem;border:1px solid var(--border);height:100%}
 .admin-topbar{background:transparent;padding:.8rem 1rem;border-bottom:1px solid rgba(11,27,43,0.04)}
 .admin-card{border-radius:12px;padding:1rem;background:var(--surface);box-shadow:0 8px 24px rgba(11,27,43,0.04)}
 
