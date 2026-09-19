@@ -28,27 +28,38 @@ $products = $q->fetchAll();
       </thead>
       <tbody>
       <?php foreach ($products as $p): ?>
+        <?php
+          $productId = (int)($p['id'] ?? 0);
+          $title = $p['title'] ?? 'Untitled Book';
+          $author = $p['author'] ?? 'Unknown Author';
+          $categoryName = $p['category_name'] ?? 'Uncategorized';
+          $cover = $p['cover_image'] ?? 'placeholder.png';
+          $price = (float)($p['price'] ?? 0);
+          $discountPrice = !empty($p['discount_price']) ? (float)$p['discount_price'] : null;
+          $stock = (int)($p['stock'] ?? 0);
+          $status = (int)($p['status'] ?? 0);
+        ?>
         <tr>
-          <td style="width:64px"><?= $p['id'] ?></td>
+          <td style="width:64px"><?= $productId ?></td>
           <td>
             <div class="d-flex align-items-center gap-3">
-              <img src="<?= base_url('public/uploads/' . ($p['cover_image'] ?? 'placeholder.png')) ?>" alt="" style="width:56px;height:78px;object-fit:cover;border-radius:6px">
+              <img src="<?= base_url('public/uploads/' . $cover) ?>" alt="" style="width:56px;height:78px;object-fit:cover;border-radius:6px">
               <div>
-                <div class="fw-bold"><?= esc($p['title']) ?></div>
-                <div class="small text-muted"><?= esc($p['author']) ?></div>
+                <div class="fw-bold"><?= esc($title) ?></div>
+                <div class="small text-muted"><?= esc($author) ?></div>
               </div>
             </div>
           </td>
-          <td><?= esc($p['category_name']) ?></td>
-          <td><?= currency_format($p['discount_price'] ?: $p['price']) ?></td>
-          <td><?= $p['stock'] ?></td>
+          <td><?= esc($categoryName) ?></td>
+          <td><?= currency_format($discountPrice !== null ? $discountPrice : $price) ?></td>
+          <td><?= $stock ?></td>
           <td>
-            <?php if ($p['status']): ?><span class="badge" style="background:var(--success);color:#fff">Active</span><?php else: ?><span class="badge" style="background:var(--danger);color:#fff">Inactive</span><?php endif; ?>
+            <?php if ($status): ?><span class="badge" style="background:var(--success);color:#fff">Active</span><?php else: ?><span class="badge" style="background:var(--danger);color:#fff">Inactive</span><?php endif; ?>
           </td>
           <td class="text-end">
             <div class="btn-group">
-              <a href="edit.php?id=<?= $p['id'] ?>" class="btn btn-sm btn-outline-secondary">Edit</a>
-              <a href="delete.php?id=<?= $p['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Deactivate this product?')">Deactivate</a>
+              <a href="edit.php?id=<?= $productId ?>" class="btn btn-sm btn-outline-secondary">Edit</a>
+              <a href="delete.php?id=<?= $productId ?>" class="btn btn-sm btn-danger" onclick="return confirm('Deactivate this product?')">Deactivate</a>
             </div>
           </td>
         </tr>

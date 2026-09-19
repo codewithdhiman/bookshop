@@ -99,24 +99,33 @@ $pages = (int)ceil($total / $perPage);
   <?php endif; ?>
 
   <?php foreach ($products as $p): ?>
+    <?php
+      $productId = (int)($p['id'] ?? 0);
+      $title = $p['title'] ?? 'Untitled Book';
+      $author = $p['author'] ?? 'Unknown Author';
+      $cover = $p['cover_image'] ?? 'placeholder.png';
+      $price = (float)($p['price'] ?? 0);
+      $discountPrice = !empty($p['discount_price']) ? (float)$p['discount_price'] : null;
+      $stock = (int)($p['stock'] ?? 0);
+    ?>
     <div class="product-item">
       <div class="card h-100 product-card">
-        <a href="<?= base_url('product.php?id=' . $p['id']) ?>" class="text-decoration-none text-reset">
-          <img src="<?= base_url('public/uploads/' . ($p['cover_image'] ?? 'placeholder.png')) ?>" alt="<?= esc($p['title']) ?>">
+        <a href="<?= base_url('product.php?id=' . $productId) ?>" class="text-decoration-none text-reset">
+          <img src="<?= base_url('public/uploads/' . $cover) ?>" alt="<?= esc($title) ?>">
           <div class="card-body d-flex flex-column">
-            <h5 class="product-title"><?= esc($p['title']) ?></h5>
-            <div class="product-meta small muted"><?= esc($p['author']) ?></div>
+            <h5 class="product-title"><?= esc($title) ?></h5>
+            <div class="product-meta small muted"><?= esc($author) ?></div>
             <div class="mt-auto d-flex justify-content-between align-items-center">
               <div>
-                <?php if (!empty($p['discount_price'])): ?>
-                  <div class="fw-bold text-danger"><?= currency_format($p['discount_price']) ?></div>
-                  <div class="small text-muted text-decoration-line-through"><?= currency_format($p['price']) ?></div>
+                <?php if ($discountPrice !== null): ?>
+                  <div class="fw-bold text-danger"><?= currency_format($discountPrice) ?></div>
+                  <div class="small text-muted text-decoration-line-through"><?= currency_format($price) ?></div>
                 <?php else: ?>
-                  <div class="fw-bold"><?= currency_format($p['price']) ?></div>
+                  <div class="fw-bold"><?= currency_format($price) ?></div>
                 <?php endif; ?>
               </div>
               <div>
-                <?php if ($p['stock'] <= 0): ?>
+                <?php if ($stock <= 0): ?>
                   <span class="badge bg-danger">Out</span>
                 <?php else: ?>
                   <span class="badge bg-success">In</span>
@@ -128,10 +137,10 @@ $pages = (int)ceil($total / $perPage);
         <div class="card-footer bg-transparent border-0 pt-0">
           <form method="post" action="<?= base_url('cart.php') ?>" class="d-flex gap-2">
             <input type="hidden" name="action" value="add">
-            <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
+            <input type="hidden" name="product_id" value="<?= $productId ?>">
             <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-            <a href="<?= base_url('product.php?id=' . $p['id']) ?>" class="btn btn-sm btn-outline-primary flex-grow-1">View</a>
-            <button type="submit" class="btn btn-sm btn-primary" <?= $p['stock']<=0? 'disabled':'' ?>>Add</button>
+            <a href="<?= base_url('product.php?id=' . $productId) ?>" class="btn btn-sm btn-outline-primary flex-grow-1">View</a>
+            <button type="submit" class="btn btn-sm btn-primary" <?= $stock<=0? 'disabled':'' ?>>Add</button>
           </form>
         </div>
       </div>
