@@ -5,8 +5,7 @@ require_admin();
 $pdo = getPDO();
 $id = (int)($_GET['id'] ?? 0);
 if ($id) {
-    // soft deactivate
-    $stmt = $pdo->prepare('UPDATE products SET status = 0 WHERE id = ?');
+    $stmt = $pdo->prepare('UPDATE products SET status = 0 WHERE id = ? LIMIT 1');
     $stmt->execute([$id]);
 }
 header('Location: index.php'); exit;

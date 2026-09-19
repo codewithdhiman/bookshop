@@ -5,17 +5,24 @@ require_once __DIR__ . '/../../includes/admin_header.php';
 
 require_admin();
 $pdo = getPDO();
+ensure_product_columns($pdo);
 $cats = $pdo->query('SELECT * FROM categories WHERE status = 1')->fetchAll();
 $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // ensure tax_rate column exists
-    ensure_column_exists($pdo, 'products', 'tax_rate', 'tax_rate DECIMAL(5,2) NULL DEFAULT NULL');
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) { $errors[]='Invalid CSRF'; }
     $title = trim($_POST['title'] ?? '');
     $category_id = (int)($_POST['category_id'] ?? 0);
     $price = (float)($_POST['price'] ?? 0);
-    $discount = $_POST['discount_price'] !== '' ? (float)$_POST['discount_price'] : null;
+    $discountInput = trim((string)($_POST['discount_price'] ?? ''));
+    $discount = $discountInput !== '' ? (float)$discountInput : null;
     $stock = max(0, (int)($_POST['stock'] ?? 0));
+    $author = trim((string)($_POST['author'] ?? ''));
+    $isbn = null;
+    try {
+      $isbn = product_isbn($pdo, $_POST['isbn'] ?? null);
+    } catch (InvalidArgumentException $e) {
+      $errors[] = $e->getMessage();
+    }
     if ($title === '' || !$category_id) { $errors[]='Title and category required'; }
     if ($discount !== null && $discount > $price) { $errors[]='Discount cannot exceed price'; }
     $imageName = null;
@@ -25,9 +32,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (empty($errors)) {
         $slug = slugify($title) . '-' . bin2hex(random_bytes(3));
-        $tax_rate = $_POST['tax_rate'] !== '' ? (float)$_POST['tax_rate'] : null;
+        $taxInput = trim((string)($_POST['tax_rate'] ?? ''));
+        $tax_rate = $taxInput !== '' ? (float)$taxInput : null;
         $stmt = $pdo->prepare('INSERT INTO products (category_id, title, slug, isbn, author, publisher, description, price, discount_price, stock, cover_image, status, tax_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-        $stmt->execute([$category_id, $title, $slug, $_POST['isbn'] ?? null, $_POST['author'] ?? null, $_POST['publisher'] ?? null, $_POST['description'] ?? null, $price, $discount, $stock, $imageName, isset($_POST['status'])?1:0, $tax_rate]);
+        $stmt->execute([$category_id, $title, $slug, $isbn, $author, trim((string)($_POST['publisher'] ?? '')) ?: null, trim((string)($_POST['description'] ?? '')) ?: null, $price, $discount, $stock, $imageName, isset($_POST['status'])?1:0, $tax_rate]);
       // Save SEO metadata for the newly created product
       $newId = (int)$pdo->lastInsertId();
       $seoData = [

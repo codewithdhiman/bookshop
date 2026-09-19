@@ -5,6 +5,7 @@ require_once __DIR__ . '/../../includes/admin_header.php';
 
 require_admin();
 $pdo = getPDO();
+ensure_product_columns($pdo);
 $q = $pdo->query('SELECT p.*, c.name as category_name FROM products p JOIN categories c ON c.id = p.category_id ORDER BY p.created_at DESC');
 $products = $q->fetchAll();
 ?>

@@ -266,6 +266,39 @@ function ensure_column_exists(PDO $pdo, string $table, string $column, string $d
     }
 }
 
+function ensure_product_columns(PDO $pdo): void
+{
+    ensure_column_exists($pdo, 'products', 'isbn', 'isbn VARCHAR(20) NULL UNIQUE');
+    ensure_column_exists($pdo, 'products', 'author', 'author VARCHAR(200) NULL');
+    ensure_column_exists($pdo, 'products', 'publisher', 'publisher VARCHAR(200) NULL');
+    ensure_column_exists($pdo, 'products', 'tax_rate', 'tax_rate DECIMAL(5,2) NULL DEFAULT NULL');
+}
+
+function product_isbn(PDO $pdo, ?string $isbn, ?int $productId = null): ?string
+{
+    $isbn = trim((string)$isbn);
+    if ($isbn === '') {
+        return null;
+    }
+    if (strlen($isbn) > 20) {
+        throw new InvalidArgumentException('ISBN must be 20 characters or fewer.');
+    }
+
+    $sql = 'SELECT id FROM products WHERE isbn = ?';
+    $params = [$isbn];
+    if ($productId !== null) {
+        $sql .= ' AND id <> ?';
+        $params[] = $productId;
+    }
+    $sql .= ' LIMIT 1';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    if ($stmt->fetchColumn()) {
+        throw new InvalidArgumentException('This ISBN is already assigned to another product.');
+    }
+    return $isbn;
+}
+
 // Image upload helper
 function handle_image_upload(array $file, string $targetDir = __DIR__ . '/../public/uploads'): array
 {

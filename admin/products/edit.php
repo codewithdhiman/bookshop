@@ -5,6 +5,7 @@ require_once __DIR__ . '/../../includes/admin_header.php';
 
 require_admin();
 $pdo = getPDO();
+ensure_product_columns($pdo);
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) { header('Location: index.php'); exit; }
 $product = $pdo->prepare('SELECT * FROM products WHERE id = ? LIMIT 1'); $product->execute([$id]); $p = $product->fetch(); if (!$p) { header('Location: index.php'); exit; }
@@ -26,14 +27,20 @@ $statusValue = (int)($p['status'] ?? 0);
 $taxValue = isset($p['tax_rate']) ? $p['tax_rate'] : '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  // ensure tax_rate column exists
-  ensure_column_exists($pdo, 'products', 'tax_rate', 'tax_rate DECIMAL(5,2) NULL DEFAULT NULL');
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) { $errors[]='Invalid CSRF'; }
     $title = trim($_POST['title'] ?? '');
     $category_id = (int)($_POST['category_id'] ?? 0);
     $price = (float)($_POST['price'] ?? 0);
-    $discount = $_POST['discount_price'] !== '' ? (float)$_POST['discount_price'] : null;
+    $discountInput = trim((string)($_POST['discount_price'] ?? ''));
+    $discount = $discountInput !== '' ? (float)$discountInput : null;
     $stock = max(0, (int)($_POST['stock'] ?? 0));
+    $author = trim((string)($_POST['author'] ?? ''));
+    $isbn = null;
+    try {
+      $isbn = product_isbn($pdo, $_POST['isbn'] ?? null, $id);
+    } catch (InvalidArgumentException $e) {
+      $errors[] = $e->getMessage();
+    }
     if ($title === '' || !$category_id) { $errors[]='Title and category required'; }
     if ($discount !== null && $discount > $price) { $errors[]='Discount cannot exceed price'; }
     $imageName = $coverValue;
@@ -42,9 +49,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($err) $errors[] = $err; else $imageName = $fn;
     }
     if (empty($errors)) {
-      $tax_rate = $_POST['tax_rate'] !== '' ? (float)$_POST['tax_rate'] : null;
+      $taxInput = trim((string)($_POST['tax_rate'] ?? ''));
+      $tax_rate = $taxInput !== '' ? (float)$taxInput : null;
       $stmt = $pdo->prepare('UPDATE products SET category_id=?, title=?, isbn=?, author=?, publisher=?, description=?, price=?, discount_price=?, stock=?, cover_image=?, status=?, tax_rate=? WHERE id=?');
-      $stmt->execute([$category_id, $title, $_POST['isbn'] ?? null, $_POST['author'] ?? null, $_POST['publisher'] ?? null, $_POST['description'] ?? null, $price, $discount, $stock, $imageName, isset($_POST['status'])?1:0, $tax_rate, $id]);
+      $stmt->execute([$category_id, $title, $isbn, $author, trim((string)($_POST['publisher'] ?? '')) ?: null, trim((string)($_POST['description'] ?? '')) ?: null, $price, $discount, $stock, $imageName, isset($_POST['status'])?1:0, $tax_rate, $id]);
       // Save SEO metadata
       $seoData = [
         'seo_title' => $_POST['seo_title'] ?? null,
