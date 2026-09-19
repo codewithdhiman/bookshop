@@ -3,8 +3,9 @@ require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/config/database.php';
 
 $pdo = getPDO();
+ensure_product_images_table($pdo);
 // featured: latest 6 active products
-$stmt = $pdo->query('SELECT * FROM products WHERE status = 1 ORDER BY created_at DESC LIMIT 6');
+$stmt = $pdo->query('SELECT p.*, COALESCE(primary_image.image, p.cover_image) AS listing_image FROM products p LEFT JOIN (SELECT product_id, MAX(image) AS image FROM product_images WHERE is_primary = 1 GROUP BY product_id) primary_image ON primary_image.product_id = p.id WHERE p.status = 1 ORDER BY p.created_at DESC LIMIT 6');
 $featured = $stmt->fetchAll();
 $cats = $pdo->query('SELECT * FROM categories WHERE status = 1 LIMIT 4')->fetchAll();
 ?>
@@ -24,7 +25,7 @@ $cats = $pdo->query('SELECT * FROM categories WHERE status = 1 LIMIT 4')->fetchA
     <div class="col-12 col-md-5">
       <div class="hero-visual">
         <?php foreach ($featured as $i => $p): ?>
-          <img src="<?= base_url('public/uploads/' . ($p['cover_image'] ?? 'placeholder.png')) ?>" alt="<?= esc($p['title']) ?>" class="hero-book" style="--i:<?= $i ?>">
+          <img src="<?= base_url('public/uploads/' . ($p['listing_image'] ?? $p['cover_image'] ?? 'placeholder.png')) ?>" alt="<?= esc($p['title']) ?>" class="hero-book" style="--i:<?= $i ?>">
         <?php endforeach; ?>
       </div>
     </div>
@@ -55,7 +56,7 @@ $cats = $pdo->query('SELECT * FROM categories WHERE status = 1 LIMIT 4')->fetchA
         <?php
           $title = $p['title'] ?? 'Untitled Book';
           $author = $p['author'] ?? 'Unknown Author';
-          $cover = $p['cover_image'] ?? 'placeholder.png';
+          $cover = $p['listing_image'] ?? $p['cover_image'] ?? 'placeholder.png';
           $price = (float)($p['price'] ?? 0);
           $discountPrice = !empty($p['discount_price']) ? (float)$p['discount_price'] : null;
           $stock = (int)($p['stock'] ?? 0);

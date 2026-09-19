@@ -6,7 +6,8 @@ require_once __DIR__ . '/../../includes/admin_header.php';
 require_admin();
 $pdo = getPDO();
 ensure_product_columns($pdo);
-$q = $pdo->query('SELECT p.*, c.name as category_name FROM products p JOIN categories c ON c.id = p.category_id ORDER BY p.created_at DESC');
+ensure_product_images_table($pdo);
+$q = $pdo->query('SELECT p.*, c.name as category_name, COALESCE(primary_image.image, p.cover_image) AS listing_image FROM products p JOIN categories c ON c.id = p.category_id LEFT JOIN (SELECT product_id, MAX(image) AS image FROM product_images WHERE is_primary = 1 GROUP BY product_id) primary_image ON primary_image.product_id = p.id ORDER BY p.created_at DESC');
 $products = $q->fetchAll();
 ?>
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -34,7 +35,7 @@ $products = $q->fetchAll();
           $title = $p['title'] ?? 'Untitled Book';
           $author = $p['author'] ?? 'Unknown Author';
           $categoryName = $p['category_name'] ?? 'Uncategorized';
-          $cover = $p['cover_image'] ?? 'placeholder.png';
+          $cover = $p['listing_image'] ?? $p['cover_image'] ?? 'placeholder.png';
           $price = (float)($p['price'] ?? 0);
           $discountPrice = !empty($p['discount_price']) ? (float)$p['discount_price'] : null;
           $stock = (int)($p['stock'] ?? 0);

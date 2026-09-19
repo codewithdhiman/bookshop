@@ -7,6 +7,7 @@ if (!$id) {
 }
 require_once __DIR__ . '/includes/header.php';
 $pdo = getPDO();
+ensure_product_images_table($pdo);
 $stmt = $pdo->prepare('SELECT p.*, c.name as category_name FROM products p JOIN categories c ON c.id = p.category_id WHERE p.id = ? AND p.status = 1 LIMIT 1');
 $stmt->execute([$id]);
 $p = $stmt->fetch();
@@ -21,11 +22,46 @@ $price = (float)($p['price'] ?? 0);
 $discountPrice = !empty($p['discount_price']) ? (float)$p['discount_price'] : null;
 $stock = (int)($p['stock'] ?? 0);
 $productId = (int)($p['id'] ?? 0);
+$gallery = get_product_images($pdo, $productId);
+if (!$gallery && $cover !== 'placeholder.png') {
+  $gallery = [['id' => 0, 'image' => $cover, 'is_primary' => 1]];
+}
+$primaryGalleryImage = $gallery[0]['image'] ?? $cover;
 
 ?>
 <div class="row product-detail">
   <div class="col-12 col-md-5 mb-3">
-    <div class="cover"><img src="<?= base_url('public/uploads/' . $cover) ?>" class="img-fluid" alt="<?= esc($title) ?>"></div>
+    <div class="product-viewer" data-product-gallery>
+      <div class="product-viewer__main" data-gallery-main tabindex="0" title="Click to zoom">
+        <div class="product-viewer__slides">
+          <?php foreach ($gallery as $galleryIndex => $galleryImage): ?>
+            <div class="product-viewer__slide <?= $galleryIndex === 0 ? 'is-active' : '' ?>" data-gallery-slide>
+              <img src="<?= base_url('public/uploads/' . $galleryImage['image']) ?>" class="img-fluid" alt="<?= esc($title) ?> image <?= $galleryIndex + 1 ?>" data-gallery-image>
+            </div>
+          <?php endforeach; ?>
+        </div>
+        <?php if (count($gallery) > 1): ?>
+          <button type="button" class="product-viewer__arrow product-viewer__arrow--prev" data-gallery-nav="prev" aria-label="Previous product image">‹</button>
+          <button type="button" class="product-viewer__arrow product-viewer__arrow--next" data-gallery-nav="next" aria-label="Next product image">›</button>
+        <?php endif; ?>
+        <span class="product-viewer__hint">Click image to zoom</span>
+      </div>
+      <?php if (count($gallery) > 1): ?>
+        <div class="product-viewer__thumbs" role="list" aria-label="Product images">
+          <?php foreach ($gallery as $galleryIndex => $galleryImage): ?>
+            <button type="button" class="product-viewer__thumb <?= $galleryIndex === 0 ? 'is-active' : '' ?>" data-gallery-index="<?= $galleryIndex ?>" aria-label="View product image <?= $galleryIndex + 1 ?>">
+              <img src="<?= base_url('public/uploads/' . $galleryImage['image']) ?>" alt="">
+            </button>
+          <?php endforeach; ?>
+        </div>
+      <?php endif; ?>
+      <div class="product-viewer__controls" aria-label="Image zoom controls">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-gallery-zoom="out" aria-label="Zoom out">−</button>
+        <span data-gallery-zoom-level>100%</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-gallery-zoom="in" aria-label="Zoom in">+</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-gallery-zoom="reset">Reset</button>
+      </div>
+    </div>
   </div>
   <div class="col-12 col-md-7">
     <h2><?= esc($title) ?></h2>
@@ -76,7 +112,7 @@ $productId = (int)($p['id'] ?? 0);
 <?php if ($stock > 0): ?>
   <div class="pdp-spacer d-md-none"></div>
   <div class="pdp-sticky d-md-none" aria-hidden="false">
-    <div class="thumb"><img src="<?= base_url('public/uploads/' . $cover) ?>" alt="<?= esc($title) ?>"></div>
+    <div class="thumb"><img src="<?= base_url('public/uploads/' . $primaryGalleryImage) ?>" alt="<?= esc($title) ?>"></div>
     <div class="meta">
       <div class="title"><?= esc($title) ?></div>
       <div class="price"><?= $discountPrice !== null ? currency_format($discountPrice) : currency_format($price) ?></div>

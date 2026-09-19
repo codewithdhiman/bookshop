@@ -59,6 +59,58 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     });
 
+    // Product gallery thumbnails and zoom controls
+    document.querySelectorAll('[data-product-gallery]').forEach(function(gallery){
+        var main = gallery.querySelector('[data-gallery-main]');
+        var slides = Array.from(gallery.querySelectorAll('[data-gallery-slide]'));
+        var thumbs = Array.from(gallery.querySelectorAll('.product-viewer__thumb'));
+        var level = gallery.querySelector('[data-gallery-zoom-level]');
+        var current = 0;
+        var zoom = 1;
+        var setZoom = function(value){
+            zoom = Math.max(1, Math.min(2.5, value));
+            var image = slides[current] && slides[current].querySelector('[data-gallery-image]');
+            if (image) {
+                image.style.transform = 'scale(' + zoom + ')';
+                image.classList.toggle('is-zoomed', zoom > 1);
+            }
+            if (level) level.textContent = Math.round(zoom * 100) + '%';
+        };
+        var showSlide = function(index){
+            if (!slides.length) return;
+            current = (index + slides.length) % slides.length;
+            slides.forEach(function(slide, slideIndex){ slide.classList.toggle('is-active', slideIndex === current); });
+            thumbs.forEach(function(thumb, thumbIndex){ thumb.classList.toggle('is-active', thumbIndex === current); });
+            setZoom(1);
+        };
+        thumbs.forEach(function(button){
+            button.addEventListener('click', function(){
+                showSlide(parseInt(button.dataset.galleryIndex || '0', 10));
+            });
+        });
+        gallery.querySelectorAll('[data-gallery-nav]').forEach(function(button){
+            button.addEventListener('click', function(){
+                showSlide(current + (button.dataset.galleryNav === 'next' ? 1 : -1));
+            });
+        });
+        gallery.querySelectorAll('[data-gallery-zoom]').forEach(function(button){
+            button.addEventListener('click', function(){
+                var action = button.dataset.galleryZoom;
+                setZoom(action === 'in' ? zoom + .25 : action === 'out' ? zoom - .25 : 1);
+            });
+        });
+        main.addEventListener('click', function(){ setZoom(zoom > 1 ? 1 : 2); });
+        main.addEventListener('keydown', function(event){
+            if (event.key === 'ArrowLeft') showSlide(current - 1);
+            if (event.key === 'ArrowRight') showSlide(current + 1);
+        });
+        main.addEventListener('wheel', function(event){
+            event.preventDefault();
+            setZoom(zoom + (event.deltaY < 0 ? .25 : -.25));
+        }, {passive:false});
+        showSlide(0);
+    });
+
     // SEO char counters for inputs with data-charcount
     document.querySelectorAll('[data-charcount]').forEach(function(el){
         var max = parseInt(el.getAttribute('data-charcount')||'0',10);

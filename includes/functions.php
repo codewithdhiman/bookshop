@@ -274,6 +274,88 @@ function ensure_product_columns(PDO $pdo): void
     ensure_column_exists($pdo, 'products', 'tax_rate', 'tax_rate DECIMAL(5,2) NULL DEFAULT NULL');
 }
 
+function ensure_product_images_table(PDO $pdo): void
+{
+    $pdo->exec("CREATE TABLE IF NOT EXISTS product_images (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        product_id BIGINT UNSIGNED NOT NULL,
+        image VARCHAR(255) NOT NULL,
+        is_primary TINYINT(1) NOT NULL DEFAULT 0,
+        sort_order INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT fk_product_images_product FOREIGN KEY (product_id)
+            REFERENCES products(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        INDEX idx_product_images_product (product_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
+function get_product_images(PDO $pdo, int $productId): array
+{
+    ensure_product_images_table($pdo);
+    $stmt = $pdo->prepare('SELECT * FROM product_images WHERE product_id = ? ORDER BY is_primary DESC, sort_order ASC, id ASC');
+    $stmt->execute([$productId]);
+    return $stmt->fetchAll();
+}
+
+function upload_product_images(array $files): array
+{
+    $uploaded = [];
+    if (empty($files['name']) || !is_array($files['name'])) {
+        return $uploaded;
+    }
+    foreach ($files['name'] as $index => $name) {
+        if (($files['error'][$index] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+            continue;
+        }
+        [$filename, $error] = handle_image_upload([
+            'name' => $name,
+            'type' => $files['type'][$index] ?? '',
+            'tmp_name' => $files['tmp_name'][$index] ?? '',
+            'error' => $files['error'][$index] ?? UPLOAD_ERR_NO_FILE,
+            'size' => $files['size'][$index] ?? 0,
+        ]);
+        if ($error !== null) {
+            throw new InvalidArgumentException($error);
+        }
+        if ($filename !== null) {
+            $uploaded[] = $filename;
+        }
+    }
+    return $uploaded;
+}
+
+function save_product_images(PDO $pdo, int $productId, array $filenames, ?int $primaryId = null): array
+{
+    ensure_product_images_table($pdo);
+    $existing = get_product_images($pdo, $productId);
+    $nextOrder = count($existing);
+    $insertedIds = [];
+    $insert = $pdo->prepare('INSERT INTO product_images (product_id, image, is_primary, sort_order) VALUES (?, ?, ?, ?)');
+    foreach ($filenames as $filename) {
+        $insert->execute([$productId, $filename, empty($existing) && $nextOrder === 0 ? 1 : 0, $nextOrder++]);
+        $insertedIds[] = (int)$pdo->lastInsertId();
+    }
+    if ($primaryId !== null) {
+        $pdo->prepare('UPDATE product_images SET is_primary = 0 WHERE product_id = ?')->execute([$productId]);
+        $pdo->prepare('UPDATE product_images SET is_primary = 1 WHERE product_id = ? AND id = ?')->execute([$productId, $primaryId]);
+    }
+    return $insertedIds;
+}
+
+function set_product_primary_image(PDO $pdo, int $productId, int $imageId): void
+{
+    ensure_product_images_table($pdo);
+    $pdo->beginTransaction();
+    try {
+        $pdo->prepare('UPDATE product_images SET is_primary = 0 WHERE product_id = ?')->execute([$productId]);
+        $pdo->prepare('UPDATE product_images SET is_primary = 1 WHERE product_id = ? AND id = ?')->execute([$productId, $imageId]);
+        $pdo->commit();
+    } catch (Throwable $e) {
+        $pdo->rollBack();
+        throw $e;
+    }
+}
+
 function product_isbn(PDO $pdo, ?string $isbn, ?int $productId = null): ?string
 {
     $isbn = trim((string)$isbn);

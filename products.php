@@ -3,6 +3,7 @@ require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/config/database.php';
 
 $pdo = getPDO();
+ensure_product_images_table($pdo);
 
 $perPage = 12;
 $page = max(1, (int)($_GET['page'] ?? 1));
@@ -28,9 +29,11 @@ if (!empty($_GET['sort'])) {
     if ($_GET['sort'] === 'newest') $order = 'p.created_at DESC';
 }
 
-$sql = "SELECT SQL_CALC_FOUND_ROWS p.* , c.name as category_name, c.slug as category_slug
+$sql = "SELECT SQL_CALC_FOUND_ROWS p.* , c.name as category_name, c.slug as category_slug,
+  COALESCE(primary_image.image, p.cover_image) AS listing_image
         FROM products p
         JOIN categories c ON c.id = p.category_id
+  LEFT JOIN (SELECT product_id, MAX(image) AS image FROM product_images WHERE is_primary = 1 GROUP BY product_id) primary_image ON primary_image.product_id = p.id
         $where
         ORDER BY $order
         LIMIT $perPage OFFSET $offset";
@@ -103,7 +106,7 @@ $pages = (int)ceil($total / $perPage);
       $productId = (int)($p['id'] ?? 0);
       $title = $p['title'] ?? 'Untitled Book';
       $author = $p['author'] ?? 'Unknown Author';
-      $cover = $p['cover_image'] ?? 'placeholder.png';
+      $cover = $p['listing_image'] ?? $p['cover_image'] ?? 'placeholder.png';
       $price = (float)($p['price'] ?? 0);
       $discountPrice = !empty($p['discount_price']) ? (float)$p['discount_price'] : null;
       $stock = (int)($p['stock'] ?? 0);

@@ -6,6 +6,7 @@ require_once __DIR__ . '/../../includes/admin_header.php';
 require_admin();
 $pdo = getPDO();
 ensure_product_columns($pdo);
+ensure_product_images_table($pdo);
 $cats = $pdo->query('SELECT * FROM categories WHERE status = 1')->fetchAll();
 $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -26,9 +27,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($title === '' || !$category_id) { $errors[]='Title and category required'; }
     if ($discount !== null && $discount > $price) { $errors[]='Discount cannot exceed price'; }
     $imageName = null;
+    $galleryImages = [];
     if (empty($errors) && !empty($_FILES['cover_image'])) {
         [$fn, $err] = handle_image_upload($_FILES['cover_image']);
         if ($err) $errors[] = $err; else $imageName = $fn;
+    }
+    if (empty($errors) && !empty($_FILES['gallery_images'])) {
+      try {
+        $galleryImages = upload_product_images($_FILES['gallery_images']);
+      } catch (InvalidArgumentException $e) {
+        $errors[] = $e->getMessage();
+      }
     }
     if (empty($errors)) {
         $slug = slugify($title) . '-' . bin2hex(random_bytes(3));
@@ -36,6 +45,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tax_rate = $taxInput !== '' ? (float)$taxInput : null;
         $stmt = $pdo->prepare('INSERT INTO products (category_id, title, slug, isbn, author, publisher, description, price, discount_price, stock, cover_image, status, tax_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
         $stmt->execute([$category_id, $title, $slug, $isbn, $author, trim((string)($_POST['publisher'] ?? '')) ?: null, trim((string)($_POST['description'] ?? '')) ?: null, $price, $discount, $stock, $imageName, isset($_POST['status'])?1:0, $tax_rate]);
+          $newProductImages = $galleryImages;
+          if ($imageName !== null) {
+            array_unshift($newProductImages, $imageName);
+          }
+          save_product_images($pdo, (int)$pdo->lastInsertId(), $newProductImages);
       // Save SEO metadata for the newly created product
       $newId = (int)$pdo->lastInsertId();
       $seoData = [
@@ -89,6 +103,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <label class="form-label">Cover Image</label>
           <input name="cover_image" type="file" accept="image/*" class="form-control" data-preview="#coverPreview">
           <img id="coverPreview" src="" alt="Preview" style="display:none;margin-top:10px;width:100%;border-radius:8px;object-fit:cover">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Additional Product Images</label>
+          <input name="gallery_images[]" type="file" accept="image/jpeg,image/png,image/webp" class="form-control" multiple>
+          <div class="form-text">Upload multiple images for the product page. The cover image is used as the primary image.</div>
         </div>
         <details class="mb-3">
           <summary class="form-label">SEO Settings</summary>
