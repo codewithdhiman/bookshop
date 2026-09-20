@@ -346,7 +346,7 @@ function upload_product_images(array $files): array
             'tmp_name' => $files['tmp_name'][$index] ?? '',
             'error' => $files['error'][$index] ?? UPLOAD_ERR_NO_FILE,
             'size' => $files['size'][$index] ?? 0,
-        ]);
+        ], __DIR__ . '/../public/uploads', true);
         if ($error !== null) {
             throw new InvalidArgumentException($error);
         }
@@ -415,7 +415,7 @@ function product_isbn(PDO $pdo, ?string $isbn, ?int $productId = null): ?string
 }
 
 // Image upload helper
-function handle_image_upload(array $file, string $targetDir = __DIR__ . '/../public/uploads'): array
+function handle_image_upload(array $file, string $targetDir = __DIR__ . '/../public/uploads', bool $optimize = false): array
 {
     $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
     if ($file['error'] === UPLOAD_ERR_NO_FILE) {
@@ -432,11 +432,49 @@ function handle_image_upload(array $file, string $targetDir = __DIR__ . '/../pub
     if (!isset($allowed[$mime])) {
         return [null, 'Invalid file type'];
     }
-    $ext = $allowed[$mime];
     if (!is_dir($targetDir)) { mkdir($targetDir, 0755, true); }
     $base = bin2hex(random_bytes(8));
+    $ext = $allowed[$mime];
     $filename = $base . '.' . $ext;
     $dest = rtrim($targetDir, '/\\') . DIRECTORY_SEPARATOR . $filename;
+
+    if ($optimize && function_exists('imagecreatefromjpeg') && function_exists('imagewebp')) {
+        $imageInfo = @getimagesize($file['tmp_name']);
+        $source = false;
+        if ($mime === 'image/jpeg' && function_exists('imagecreatefromjpeg')) {
+            $source = @imagecreatefromjpeg($file['tmp_name']);
+        } elseif ($mime === 'image/png' && function_exists('imagecreatefrompng')) {
+            $source = @imagecreatefrompng($file['tmp_name']);
+        } elseif ($mime === 'image/webp' && function_exists('imagecreatefromwebp')) {
+            $source = @imagecreatefromwebp($file['tmp_name']);
+        }
+        if ($imageInfo && $source !== false) {
+            $sourceWidth = (int)$imageInfo[0];
+            $sourceHeight = (int)$imageInfo[1];
+            $scale = min(1, 1200 / $sourceWidth, 1600 / $sourceHeight);
+            $width = max(1, (int)round($sourceWidth * $scale));
+            $height = max(1, (int)round($sourceHeight * $scale));
+            $resized = imagecreatetruecolor($width, $height);
+            imagealphablending($resized, false);
+            imagesavealpha($resized, true);
+            $transparent = imagecolorallocatealpha($resized, 255, 255, 255, 127);
+            imagefill($resized, 0, 0, $transparent);
+            imagecopyresampled($resized, $source, 0, 0, 0, 0, $width, $height, $sourceWidth, $sourceHeight);
+            $filename = $base . '.webp';
+            $dest = rtrim($targetDir, '/\\') . DIRECTORY_SEPARATOR . $filename;
+            $saved = imagewebp($resized, $dest, 82);
+            imagedestroy($resized);
+            imagedestroy($source);
+            $source = false;
+            if ($saved) {
+                return [$filename, null];
+            }
+        }
+        if ($source !== false) {
+            imagedestroy($source);
+        }
+    }
+
     if (!move_uploaded_file($file['tmp_name'], $dest)) {
         return [null, 'Failed to move uploaded file'];
     }

@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $imageName = $coverValue;
     $galleryImages = [];
     if (empty($errors) && !empty($_FILES['cover_image']) && $_FILES['cover_image']['error'] !== UPLOAD_ERR_NO_FILE) {
-        [$fn, $err] = handle_image_upload($_FILES['cover_image']);
+        [$fn, $err] = handle_image_upload($_FILES['cover_image'], __DIR__ . '/../../public/uploads', true);
         if ($err) $errors[] = $err; else $imageName = $fn;
     }
       if (empty($errors) && !empty($_FILES['gallery_images'])) {
