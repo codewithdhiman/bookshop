@@ -19,13 +19,15 @@ $cats = $pdo->query('SELECT * FROM categories WHERE status = 1 LIMIT 4')->fetchA
       <p class="lead text-muted mb-4">Handcrafted sketchbooks, artisan drawing inks, and beautifully published works—designed to inspire curious minds and creative hands.</p>
       <div class="d-flex gap-2">
         <a href="<?= base_url('products.php') ?>" class="btn btn-primary btn-lg">Shop the Collection</a>
-        <a href="<?= base_url('products.php') ?>" class="btn btn-outline-primary btn-lg">Explore Publications</a>
+        <!-- <a href="<?= base_url('products.php') ?>" class="btn btn-outline-primary btn-lg">Explore Publications</a> -->
       </div>
     </div>
     <div class="col-12 col-md-5">
       <div class="hero-visual">
         <?php foreach ($featured as $i => $p): ?>
-          <img src="<?= base_url('public/uploads/' . ($p['listing_image'] ?? $p['cover_image'] ?? 'placeholder.png')) ?>" alt="<?= esc($p['title']) ?>" class="hero-book" style="--i:<?= $i ?>">
+          <a href="<?= base_url('product.php?id=' . (int)$p['id']) ?>" class="hero-book" aria-label="View <?= esc($p['title']) ?>">
+            <img src="<?= base_url('public/uploads/' . ($p['listing_image'] ?? $p['cover_image'] ?? 'placeholder.png')) ?>" alt="<?= esc($p['title']) ?>" class="hero-book-image" style="--i:<?= $i ?>">
+          </a>
         <?php endforeach; ?>
       </div>
     </div>

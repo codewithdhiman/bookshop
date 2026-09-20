@@ -7,7 +7,7 @@ require_once __DIR__ . '/functions.php';
 <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Bookshop</title>
+        <title>Canelino</title>
         <script>
             // Apply theme early to avoid flash: read saved theme or system
             (function(){

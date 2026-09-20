@@ -15,7 +15,7 @@ $user = $_SESSION['user'] ?? null;
     <div class="collapse navbar-collapse" id="navmenu">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center">
         <li class="nav-item"><a class="nav-link" href="<?= base_url() ?>">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= base_url('products.php') ?>">Books</a></li>
+        <li class="nav-item"><a class="nav-link" href="<?= base_url('products.php') ?>">Shop</a></li>
       </ul>
 
       <ul class="navbar-nav ms-auto align-items-center">

@@ -74,7 +74,7 @@ $galleryItemCount = count($gallery) + ($youtubeEmbedUrl ? 1 : 0);
       </div>
     </div>
   </div>
-  <div class="col-12 col-md-7">
+  <div class="col-12 col-md-7 product-info">
     <h2><?= esc($title) ?></h2>
     <p class="small muted">By <?= esc($author) ?><?= $publisher ? ' | '.esc($publisher):'' ?></p>
     <div class="mb-3">
