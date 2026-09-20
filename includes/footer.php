@@ -5,7 +5,7 @@
     </main>
     <footer class="bg-light mt-5 py-4">
         <div class="container text-center small">
-                &copy; <?= date('Y') ?> Bookshop. All rights reserved.
+                &copy; 2006 CANELINO. All rights reserved.
         </div>
     </footer>
 </div>

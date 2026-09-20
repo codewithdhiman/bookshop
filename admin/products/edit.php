@@ -24,6 +24,7 @@ $priceValue = (float)($p['price'] ?? 0);
 $discountValue = !empty($p['discount_price']) ? (float)$p['discount_price'] : '';
 $stockValue = (int)($p['stock'] ?? 0);
 $coverValue = $p['cover_image'] ?? null;
+$youtubeVideoUrlValue = $p['youtube_video_url'] ?? '';
 $statusValue = (int)($p['status'] ?? 0);
 $taxValue = isset($p['tax_rate']) ? $p['tax_rate'] : '';
 $productImages = get_product_images($pdo, $id);
@@ -37,6 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $discount = $discountInput !== '' ? (float)$discountInput : null;
     $stock = max(0, (int)($_POST['stock'] ?? 0));
     $author = trim((string)($_POST['author'] ?? ''));
+    $youtubeVideoUrl = trim((string)($_POST['youtube_video_url'] ?? ''));
+    if ($youtubeVideoUrl !== '' && youtube_embed_url($youtubeVideoUrl) === null) {
+      $errors[] = 'Enter a valid YouTube video URL.';
+    }
     $isbn = null;
     try {
       $isbn = product_isbn($pdo, $_POST['isbn'] ?? null, $id);
@@ -61,8 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
       $taxInput = trim((string)($_POST['tax_rate'] ?? ''));
       $tax_rate = $taxInput !== '' ? (float)$taxInput : null;
-      $stmt = $pdo->prepare('UPDATE products SET category_id=?, title=?, isbn=?, author=?, publisher=?, description=?, price=?, discount_price=?, stock=?, cover_image=?, status=?, tax_rate=? WHERE id=?');
-      $stmt->execute([$category_id, $title, $isbn, $author, trim((string)($_POST['publisher'] ?? '')) ?: null, trim((string)($_POST['description'] ?? '')) ?: null, $price, $discount, $stock, $imageName, isset($_POST['status'])?1:0, $tax_rate, $id]);
+      $stmt = $pdo->prepare('UPDATE products SET category_id=?, title=?, isbn=?, author=?, publisher=?, description=?, price=?, discount_price=?, stock=?, cover_image=?, youtube_video_url=?, status=?, tax_rate=? WHERE id=?');
+      $stmt->execute([$category_id, $title, $isbn, $author, trim((string)($_POST['publisher'] ?? '')) ?: null, trim((string)($_POST['description'] ?? '')) ?: null, $price, $discount, $stock, $imageName, $youtubeVideoUrl !== '' ? $youtubeVideoUrl : null, isset($_POST['status'])?1:0, $tax_rate, $id]);
       $deleteIds = array_map('intval', (array)($_POST['delete_images'] ?? []));
       if ($deleteIds) {
         $placeholders = implode(',', array_fill(0, count($deleteIds), '?'));
@@ -123,6 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="col-md-6 mb-3"><label class="form-label">Stock</label><input name="stock" type="number" class="form-control" value="<?= $stockValue ?>"></div>
         </div>
         <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="6"><?= esc($descriptionValue) ?></textarea></div>
+        <div class="mb-3"><label class="form-label" for="youtubeVideoUrl">YouTube Video Link <span class="text-muted">(optional)</span></label><input name="youtube_video_url" id="youtubeVideoUrl" type="url" class="form-control" placeholder="https://www.youtube.com/watch?v=..." value="<?= esc($youtubeVideoUrlValue) ?>" data-youtube-preview-target="#youtubePreview"><div class="form-text">The video will appear in the product image carousel.</div><div id="youtubePreview" class="youtube-preview" <?= youtube_embed_url($youtubeVideoUrlValue) ? '' : 'hidden' ?>></div></div>
       </div>
     </div>
     <div class="col-md-4">

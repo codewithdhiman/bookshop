@@ -59,6 +59,33 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     });
 
+    // YouTube preview for product forms
+    document.querySelectorAll('[data-youtube-preview-target]').forEach(function(input){
+        var preview = document.querySelector(input.dataset.youtubePreviewTarget);
+        if (!preview) return;
+        var getEmbedUrl = function(value){
+            var match = String(value || '').trim().match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+            return match ? 'https://www.youtube-nocookie.com/embed/' + match[1] + '?rel=0' : '';
+        };
+        var update = function(){
+            var embedUrl = getEmbedUrl(input.value);
+            preview.replaceChildren();
+            if (!embedUrl) {
+                preview.hidden = true;
+                return;
+            }
+            var iframe = document.createElement('iframe');
+            iframe.src = embedUrl;
+            iframe.title = 'YouTube video preview';
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+            iframe.allowFullscreen = true;
+            preview.appendChild(iframe);
+            preview.hidden = false;
+        };
+        input.addEventListener('input', update);
+        update();
+    });
+
     // Product gallery thumbnails and zoom controls
     document.querySelectorAll('[data-product-gallery]').forEach(function(gallery){
         var main = gallery.querySelector('[data-gallery-main]');

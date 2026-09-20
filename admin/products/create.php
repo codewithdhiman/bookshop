@@ -18,6 +18,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $discount = $discountInput !== '' ? (float)$discountInput : null;
     $stock = max(0, (int)($_POST['stock'] ?? 0));
     $author = trim((string)($_POST['author'] ?? ''));
+    $youtubeVideoUrl = trim((string)($_POST['youtube_video_url'] ?? ''));
+    if ($youtubeVideoUrl !== '' && youtube_embed_url($youtubeVideoUrl) === null) {
+      $errors[] = 'Enter a valid YouTube video URL.';
+    }
     $isbn = null;
     try {
       $isbn = product_isbn($pdo, $_POST['isbn'] ?? null);
@@ -43,8 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $slug = slugify($title) . '-' . bin2hex(random_bytes(3));
         $taxInput = trim((string)($_POST['tax_rate'] ?? ''));
         $tax_rate = $taxInput !== '' ? (float)$taxInput : null;
-        $stmt = $pdo->prepare('INSERT INTO products (category_id, title, slug, isbn, author, publisher, description, price, discount_price, stock, cover_image, status, tax_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-        $stmt->execute([$category_id, $title, $slug, $isbn, $author, trim((string)($_POST['publisher'] ?? '')) ?: null, trim((string)($_POST['description'] ?? '')) ?: null, $price, $discount, $stock, $imageName, isset($_POST['status'])?1:0, $tax_rate]);
+        $stmt = $pdo->prepare('INSERT INTO products (category_id, title, slug, isbn, author, publisher, description, price, discount_price, stock, cover_image, youtube_video_url, status, tax_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt->execute([$category_id, $title, $slug, $isbn, $author, trim((string)($_POST['publisher'] ?? '')) ?: null, trim((string)($_POST['description'] ?? '')) ?: null, $price, $discount, $stock, $imageName, $youtubeVideoUrl !== '' ? $youtubeVideoUrl : null, isset($_POST['status'])?1:0, $tax_rate]);
           $newProductImages = $galleryImages;
           if ($imageName !== null) {
             array_unshift($newProductImages, $imageName);
@@ -92,6 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="col-md-6 mb-3"><label class="form-label">Stock</label><input name="stock" type="number" class="form-control" value="0"></div>
         </div>
         <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="6"></textarea></div>
+        <div class="mb-3"><label class="form-label" for="youtubeVideoUrl">YouTube Video Link <span class="text-muted">(optional)</span></label><input name="youtube_video_url" id="youtubeVideoUrl" type="url" class="form-control" placeholder="https://www.youtube.com/watch?v=..." data-youtube-preview-target="#youtubePreview"><div class="form-text">The video will appear in the product image carousel.</div><div id="youtubePreview" class="youtube-preview" hidden></div></div>
       </div>
     </div>
     <div class="col-md-4">

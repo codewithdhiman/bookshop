@@ -5,7 +5,9 @@ $user = $_SESSION['user'] ?? null;
 ?>
 <nav class="navbar navbar-expand-lg">
   <div class="container">
-    <a class="navbar-brand" href="<?= base_url() ?>">Bookshop</a>
+    <a class="navbar-brand" href="<?= base_url() ?>">
+      <img src="<?= base_url('public/images/logo.png') ?>" alt="Bookstore Logo" height="40">  
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navmenu" aria-controls="navmenu" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>

@@ -25,6 +25,7 @@ require_once __DIR__ . '/functions.php';
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
         <link href="<?= base_url('public/css/design.css') ?>" rel="stylesheet">
         <link href="<?= base_url('public/css/style.css') ?>" rel="stylesheet">
+        <link rel="icon" type="image/png" href="<?= base_url('public/images/favicon.ico') ?>">
     <?php
     // render SEO meta tags when possible
     $pdo = getPDO();

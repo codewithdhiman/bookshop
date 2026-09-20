@@ -60,6 +60,7 @@ CREATE TABLE products (
     stock INT UNSIGNED NOT NULL DEFAULT 0,
 
     cover_image VARCHAR(255) NULL,
+    youtube_video_url VARCHAR(500) NULL,
 
     status TINYINT(1) NOT NULL DEFAULT 1,
 

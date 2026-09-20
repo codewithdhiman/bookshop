@@ -272,6 +272,38 @@ function ensure_product_columns(PDO $pdo): void
     ensure_column_exists($pdo, 'products', 'author', 'author VARCHAR(200) NULL');
     ensure_column_exists($pdo, 'products', 'publisher', 'publisher VARCHAR(200) NULL');
     ensure_column_exists($pdo, 'products', 'tax_rate', 'tax_rate DECIMAL(5,2) NULL DEFAULT NULL');
+    ensure_column_exists($pdo, 'products', 'youtube_video_url', 'youtube_video_url VARCHAR(500) NULL');
+}
+
+function youtube_embed_url(?string $url): ?string
+{
+    $url = trim((string)$url);
+    if ($url === '') {
+        return null;
+    }
+
+    $parts = parse_url($url);
+    $host = strtolower($parts['host'] ?? '');
+    $host = preg_replace('/^www\./', '', $host);
+    $videoId = null;
+
+    if ($host === 'youtu.be') {
+        $videoId = trim($parts['path'] ?? '', '/');
+    } elseif (in_array($host, ['youtube.com', 'm.youtube.com', 'youtube-nocookie.com'], true)) {
+        $path = trim($parts['path'] ?? '', '/');
+        parse_str($parts['query'] ?? '', $query);
+        if ($path === 'watch') {
+            $videoId = $query['v'] ?? null;
+        } elseif (preg_match('#^(?:embed|shorts)/([^/]+)$#', $path, $matches)) {
+            $videoId = $matches[1];
+        }
+    }
+
+    if (!is_string($videoId) || !preg_match('/^[A-Za-z0-9_-]{11}$/', $videoId)) {
+        return null;
+    }
+
+    return 'https://www.youtube-nocookie.com/embed/' . $videoId . '?rel=0';
 }
 
 function ensure_product_images_table(PDO $pdo): void

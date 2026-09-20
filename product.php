@@ -7,6 +7,7 @@ if (!$id) {
 }
 require_once __DIR__ . '/includes/header.php';
 $pdo = getPDO();
+ensure_product_columns($pdo);
 ensure_product_images_table($pdo);
 $stmt = $pdo->prepare('SELECT p.*, c.name as category_name FROM products p JOIN categories c ON c.id = p.category_id WHERE p.id = ? AND p.status = 1 LIMIT 1');
 $stmt->execute([$id]);
@@ -22,11 +23,13 @@ $price = (float)($p['price'] ?? 0);
 $discountPrice = !empty($p['discount_price']) ? (float)$p['discount_price'] : null;
 $stock = (int)($p['stock'] ?? 0);
 $productId = (int)($p['id'] ?? 0);
+$youtubeEmbedUrl = youtube_embed_url($p['youtube_video_url'] ?? null);
 $gallery = get_product_images($pdo, $productId);
 if (!$gallery && $cover !== 'placeholder.png') {
   $gallery = [['id' => 0, 'image' => $cover, 'is_primary' => 1]];
 }
 $primaryGalleryImage = $gallery[0]['image'] ?? $cover;
+$galleryItemCount = count($gallery) + ($youtubeEmbedUrl ? 1 : 0);
 
 ?>
 <div class="row product-detail">
@@ -39,20 +42,28 @@ $primaryGalleryImage = $gallery[0]['image'] ?? $cover;
               <img src="<?= base_url('public/uploads/' . $galleryImage['image']) ?>" class="img-fluid" alt="<?= esc($title) ?> image <?= $galleryIndex + 1 ?>" data-gallery-image>
             </div>
           <?php endforeach; ?>
+          <?php if ($youtubeEmbedUrl): ?>
+            <div class="product-viewer__slide <?= !$gallery ? 'is-active' : '' ?>" data-gallery-slide>
+              <iframe class="product-viewer__video" src="<?= esc($youtubeEmbedUrl) ?>" title="<?= esc($title) ?> video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+          <?php endif; ?>
         </div>
-        <?php if (count($gallery) > 1): ?>
+        <?php if ($galleryItemCount > 1): ?>
           <button type="button" class="product-viewer__arrow product-viewer__arrow--prev" data-gallery-nav="prev" aria-label="Previous product image">‹</button>
           <button type="button" class="product-viewer__arrow product-viewer__arrow--next" data-gallery-nav="next" aria-label="Next product image">›</button>
         <?php endif; ?>
         <span class="product-viewer__hint">Click image to zoom</span>
       </div>
-      <?php if (count($gallery) > 1): ?>
+      <?php if ($galleryItemCount > 1): ?>
         <div class="product-viewer__thumbs" role="list" aria-label="Product images">
           <?php foreach ($gallery as $galleryIndex => $galleryImage): ?>
             <button type="button" class="product-viewer__thumb <?= $galleryIndex === 0 ? 'is-active' : '' ?>" data-gallery-index="<?= $galleryIndex ?>" aria-label="View product image <?= $galleryIndex + 1 ?>">
               <img src="<?= base_url('public/uploads/' . $galleryImage['image']) ?>" alt="">
             </button>
           <?php endforeach; ?>
+          <?php if ($youtubeEmbedUrl): ?>
+            <button type="button" class="product-viewer__thumb product-viewer__thumb--video <?= !$gallery ? 'is-active' : '' ?>" data-gallery-index="<?= count($gallery) ?>" aria-label="View product video">Video</button>
+          <?php endif; ?>
         </div>
       <?php endif; ?>
       <div class="product-viewer__controls" aria-label="Image zoom controls">

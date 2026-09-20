@@ -14,12 +14,12 @@ $cats = $pdo->query('SELECT * FROM categories WHERE status = 1 LIMIT 4')->fetchA
 <section class="hero py-5">
   <div class="row align-items-center">
     <div class="col-12 col-md-7">
-      <div class="lead-label text-uppercase small text-muted-2">The joy of reading</div>
-      <h1 class="display-5 mb-3">Find Your Next<br>Great Read.</h1>
-      <p class="lead text-muted mb-4">Stories, ideas and knowledge — thoughtfully collected for curious readers.</p>
+      <div class="lead-label text-uppercase small text-muted-2">THE ART OF EXPRESSION</div>
+      <h1 class="display-5 mb-3">Craft Your Next Masterpiece..</h1>
+      <p class="lead text-muted mb-4">Handcrafted sketchbooks, artisan drawing inks, and beautifully published works—designed to inspire curious minds and creative hands.</p>
       <div class="d-flex gap-2">
-        <a href="<?= base_url('products.php') ?>" class="btn btn-primary btn-lg">Browse Books</a>
-        <a href="<?= base_url('products.php') ?>" class="btn btn-outline-primary btn-lg">Explore Categories</a>
+        <a href="<?= base_url('products.php') ?>" class="btn btn-primary btn-lg">Shop the Collection</a>
+        <a href="<?= base_url('products.php') ?>" class="btn btn-outline-primary btn-lg">Explore Publications</a>
       </div>
     </div>
     <div class="col-12 col-md-5">
