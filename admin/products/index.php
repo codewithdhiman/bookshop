@@ -24,6 +24,7 @@ $products = $q->fetchAll();
           <th>Category</th>
           <th>Price</th>
           <th>Stock</th>
+          <th>Featured</th>
           <th>Status</th>
           <th class="text-end">Actions</th>
         </tr>
@@ -40,6 +41,7 @@ $products = $q->fetchAll();
           $discountPrice = !empty($p['discount_price']) ? (float)$p['discount_price'] : null;
           $stock = (int)($p['stock'] ?? 0);
           $status = (int)($p['status'] ?? 0);
+          $isFeatured = (int)($p['is_featured'] ?? 0);
         ?>
         <tr>
           <td style="width:64px"><?= $productId ?></td>
@@ -55,6 +57,7 @@ $products = $q->fetchAll();
           <td><?= esc($categoryName) ?></td>
           <td><?= currency_format($discountPrice !== null ? $discountPrice : $price) ?></td>
           <td><?= $stock ?></td>
+          <td><?php if ($isFeatured): ?><span class="badge" style="background:var(--accent);color:#fff">Featured</span><?php else: ?><span class="text-muted">—</span><?php endif; ?></td>
           <td>
             <?php if ($status): ?><span class="badge" style="background:var(--success);color:#fff">Active</span><?php else: ?><span class="badge" style="background:var(--danger);color:#fff">Inactive</span><?php endif; ?>
           </td>

@@ -273,6 +273,7 @@ function ensure_product_columns(PDO $pdo): void
     ensure_column_exists($pdo, 'products', 'publisher', 'publisher VARCHAR(200) NULL');
     ensure_column_exists($pdo, 'products', 'tax_rate', 'tax_rate DECIMAL(5,2) NULL DEFAULT NULL');
     ensure_column_exists($pdo, 'products', 'youtube_video_url', 'youtube_video_url VARCHAR(500) NULL');
+    ensure_column_exists($pdo, 'products', 'is_featured', 'is_featured TINYINT(1) NOT NULL DEFAULT 0');
 }
 
 function youtube_embed_url(?string $url): ?string

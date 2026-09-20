@@ -3,9 +3,10 @@ require_once __DIR__ . '/includes/header.php';
 require_once __DIR__ . '/config/database.php';
 
 $pdo = getPDO();
+ensure_product_columns($pdo);
 ensure_product_images_table($pdo);
-// featured: latest 6 active products
-$stmt = $pdo->query('SELECT p.*, COALESCE(primary_image.image, p.cover_image) AS listing_image FROM products p LEFT JOIN (SELECT product_id, MAX(image) AS image FROM product_images WHERE is_primary = 1 GROUP BY product_id) primary_image ON primary_image.product_id = p.id WHERE p.status = 1 ORDER BY p.created_at DESC LIMIT 6');
+// Featured products are selected explicitly in the admin product form.
+$stmt = $pdo->query('SELECT p.*, COALESCE(primary_image.image, p.cover_image) AS listing_image FROM products p LEFT JOIN (SELECT product_id, MAX(image) AS image FROM product_images WHERE is_primary = 1 GROUP BY product_id) primary_image ON primary_image.product_id = p.id WHERE p.status = 1 AND p.is_featured = 1 ORDER BY p.created_at DESC LIMIT 6');
 $featured = $stmt->fetchAll();
 $cats = $pdo->query('SELECT * FROM categories WHERE status = 1 LIMIT 4')->fetchAll();
 ?>

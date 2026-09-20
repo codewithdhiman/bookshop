@@ -63,6 +63,7 @@ CREATE TABLE products (
     youtube_video_url VARCHAR(500) NULL,
 
     status TINYINT(1) NOT NULL DEFAULT 1,
+    is_featured TINYINT(1) NOT NULL DEFAULT 0,
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -76,6 +77,7 @@ CREATE TABLE products (
     INDEX idx_products_category (category_id),
     INDEX idx_products_author (author),
     INDEX idx_products_status (status),
+    INDEX idx_products_featured (is_featured),
     INDEX idx_products_title (title)
 ) ENGINE=InnoDB;
 

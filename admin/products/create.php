@@ -47,8 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $slug = slugify($title) . '-' . bin2hex(random_bytes(3));
         $taxInput = trim((string)($_POST['tax_rate'] ?? ''));
         $tax_rate = $taxInput !== '' ? (float)$taxInput : null;
-        $stmt = $pdo->prepare('INSERT INTO products (category_id, title, slug, isbn, author, publisher, description, price, discount_price, stock, cover_image, youtube_video_url, status, tax_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-        $stmt->execute([$category_id, $title, $slug, $isbn, $author, trim((string)($_POST['publisher'] ?? '')) ?: null, trim((string)($_POST['description'] ?? '')) ?: null, $price, $discount, $stock, $imageName, $youtubeVideoUrl !== '' ? $youtubeVideoUrl : null, isset($_POST['status'])?1:0, $tax_rate]);
+        $stmt = $pdo->prepare('INSERT INTO products (category_id, title, slug, isbn, author, publisher, description, price, discount_price, stock, cover_image, youtube_video_url, status, is_featured, tax_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+        $stmt->execute([$category_id, $title, $slug, $isbn, $author, trim((string)($_POST['publisher'] ?? '')) ?: null, trim((string)($_POST['description'] ?? '')) ?: null, $price, $discount, $stock, $imageName, $youtubeVideoUrl !== '' ? $youtubeVideoUrl : null, isset($_POST['status'])?1:0, isset($_POST['is_featured'])?1:0, $tax_rate]);
           $newProductImages = $galleryImages;
           if ($imageName !== null) {
             array_unshift($newProductImages, $imageName);
@@ -146,6 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </div>
         </details>
         <div class="mb-3 form-check"><input type="checkbox" name="status" class="form-check-input" id="status" checked><label for="status" class="form-check-label">Active</label></div>
+        <div class="mb-3 form-check"><input type="checkbox" name="is_featured" class="form-check-input" id="isFeatured"><label for="isFeatured" class="form-check-label">Feature on homepage</label></div>
         <div class="d-grid"><button class="btn btn-primary">Create</button></div>
       </div>
     </div>

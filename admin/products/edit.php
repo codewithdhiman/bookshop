@@ -26,6 +26,7 @@ $stockValue = (int)($p['stock'] ?? 0);
 $coverValue = $p['cover_image'] ?? null;
 $youtubeVideoUrlValue = $p['youtube_video_url'] ?? '';
 $statusValue = (int)($p['status'] ?? 0);
+$featuredValue = (int)($p['is_featured'] ?? 0);
 $taxValue = isset($p['tax_rate']) ? $p['tax_rate'] : '';
 $productImages = get_product_images($pdo, $id);
 
@@ -66,8 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
       $taxInput = trim((string)($_POST['tax_rate'] ?? ''));
       $tax_rate = $taxInput !== '' ? (float)$taxInput : null;
-      $stmt = $pdo->prepare('UPDATE products SET category_id=?, title=?, isbn=?, author=?, publisher=?, description=?, price=?, discount_price=?, stock=?, cover_image=?, youtube_video_url=?, status=?, tax_rate=? WHERE id=?');
-      $stmt->execute([$category_id, $title, $isbn, $author, trim((string)($_POST['publisher'] ?? '')) ?: null, trim((string)($_POST['description'] ?? '')) ?: null, $price, $discount, $stock, $imageName, $youtubeVideoUrl !== '' ? $youtubeVideoUrl : null, isset($_POST['status'])?1:0, $tax_rate, $id]);
+      $stmt = $pdo->prepare('UPDATE products SET category_id=?, title=?, isbn=?, author=?, publisher=?, description=?, price=?, discount_price=?, stock=?, cover_image=?, youtube_video_url=?, status=?, is_featured=?, tax_rate=? WHERE id=?');
+      $stmt->execute([$category_id, $title, $isbn, $author, trim((string)($_POST['publisher'] ?? '')) ?: null, trim((string)($_POST['description'] ?? '')) ?: null, $price, $discount, $stock, $imageName, $youtubeVideoUrl !== '' ? $youtubeVideoUrl : null, isset($_POST['status'])?1:0, isset($_POST['is_featured'])?1:0, $tax_rate, $id]);
       $deleteIds = array_map('intval', (array)($_POST['delete_images'] ?? []));
       if ($deleteIds) {
         $placeholders = implode(',', array_fill(0, count($deleteIds), '?'));
@@ -191,6 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </div>
         </details>
         <div class="mb-3 form-check"><input type="checkbox" name="status" class="form-check-input" id="status" <?= $statusValue ? 'checked' : '' ?>><label for="status" class="form-check-label">Active</label></div>
+        <div class="mb-3 form-check"><input type="checkbox" name="is_featured" class="form-check-input" id="isFeatured" <?= $featuredValue ? 'checked' : '' ?>><label for="isFeatured" class="form-check-label">Feature on homepage</label></div>
         <div class="d-grid"><button class="btn btn-primary">Save</button></div>
       </div>
     </div>
