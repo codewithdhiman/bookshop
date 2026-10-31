@@ -18,7 +18,7 @@ $title = $p['title'] ?? 'Untitled Book';
 $author = $p['author'] ?? 'Unknown Author';
 $cover = $p['cover_image'] ?? 'placeholder.png';
 $publisher = $p['publisher'] ?? '';
-$description = $p['description'] ?? '';
+$description = sanitize_product_description((string)($p['description'] ?? ''));
 $price = (float)($p['price'] ?? 0);
 $discountPrice = !empty($p['discount_price']) ? (float)$p['discount_price'] : null;
 $stock = (int)($p['stock'] ?? 0);
@@ -87,7 +87,7 @@ $galleryItemCount = count($gallery) + ($youtubeEmbedUrl ? 1 : 0);
     </div>
 
     <div class="specs">
-      <p><?= nl2br(esc($description)) ?></p>
+      <div class="product-description"><?= $description ?></div>
     </div>
 
     <p class="mt-2">

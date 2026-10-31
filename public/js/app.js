@@ -1,5 +1,31 @@
 // public/js/app.js
 document.addEventListener('DOMContentLoaded', function(){
+    document.querySelectorAll('[data-rich-text-editor]').forEach(function(container){
+        if (typeof Quill === 'undefined') return;
+        var source = container.parentElement.querySelector('[data-rich-text-source]');
+        var form = container.closest('form');
+        if (!source || !form) return;
+        var editor = new Quill(container, {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ header: [1, 2, 3, false] }],
+                    [{ size: ['small', false, 'large', 'huge'] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    ['blockquote', 'link'],
+                    [{ color: [] }, { background: [] }, { align: [] }],
+                    ['clean']
+                ]
+            }
+        });
+        editor.root.innerHTML = source.value;
+        source.hidden = true;
+        form.addEventListener('submit', function(){
+            source.value = editor.root.innerHTML;
+        });
+    });
+
     // Sticky navbar on scroll
     var navbar = document.querySelector('.navbar');
     if (navbar) {

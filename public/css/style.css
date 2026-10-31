@@ -4,3 +4,82 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helv
 .product-title { font-size: 1rem; font-weight: 600; }
 .muted { color: #6c757d; }
 .site-main{min-height: 60vh;}
+
+.rich-text-editor .ql-container,
+.rich-text-editor .ql-editor {
+	min-height: 220px;
+	font: inherit;
+}
+
+.rich-text-editor .ql-toolbar.ql-snow {
+	padding: 6px 8px;
+	border-color: #ced4da;
+	border-radius: 4px 4px 0 0;
+}
+
+.rich-text-editor .ql-toolbar .ql-formats {
+	margin-right: 8px;
+}
+
+.rich-text-editor .ql-toolbar button {
+	width: 28px;
+	height: 28px;
+	min-width: 28px;
+	min-height: 28px;
+	padding: 4px;
+}
+
+.rich-text-editor .ql-toolbar .ql-picker-label {
+	min-width: 28px;
+	min-height: 28px;
+	padding: 3px 4px;
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-header {
+	width: 92px;
+}
+
+.rich-text-editor .ql-toolbar .ql-picker.ql-size {
+	width: 78px;
+}
+
+.rich-text-editor .ql-toolbar .ql-picker-options .ql-picker-item {
+	min-height: 28px;
+}
+
+.rich-text-editor .ql-container.ql-snow {
+	border-color: #ced4da;
+	border-radius: 0 0 4px 4px;
+}
+
+.product-description > :first-child {
+	margin-top: 0;
+}
+
+.product-description > :last-child {
+	margin-bottom: 0;
+}
+
+.product-description .ql-align-center {
+	text-align: center;
+}
+
+.product-description .ql-align-right {
+	text-align: right;
+}
+
+.product-description .ql-align-justify {
+	text-align: justify;
+}
+
+.product-description .ql-size-small {
+	font-size: 0.75em;
+}
+
+.product-description .ql-size-large {
+	font-size: 1.5em;
+}
+
+.product-description .ql-size-huge {
+	font-size: 2.5em;
+}

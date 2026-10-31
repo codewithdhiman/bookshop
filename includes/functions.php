@@ -14,6 +14,121 @@ function esc($str)
     return htmlspecialchars((string)$str, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+function sanitize_product_description(?string $html): string
+{
+    $html = (string)$html;
+    if ($html === '') {
+        return '';
+    }
+
+    if (strip_tags($html) === $html) {
+        $html = '<p>' . nl2br(esc($html), false) . '</p>';
+    }
+
+    $previousErrorSetting = libxml_use_internal_errors(true);
+    $document = new DOMDocument('1.0', 'UTF-8');
+    $document->loadHTML('<?xml encoding="UTF-8"><div id="product-description-root">' . $html . '</div>');
+    libxml_clear_errors();
+    libxml_use_internal_errors($previousErrorSetting);
+
+    $root = (new DOMXPath($document))->query('//*[@id="product-description-root"]')->item(0);
+    if (!$root) {
+        return '';
+    }
+
+    $allowedTags = ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'sub', 'sup', 'h1', 'h2', 'h3', 'blockquote', 'ol', 'ul', 'li', 'a', 'span', 'pre'];
+    $dropTags = ['script', 'style', 'iframe', 'object', 'embed', 'svg', 'math', 'template'];
+    $sanitizeChildren = function (DOMNode $parent) use (&$sanitizeChildren, $allowedTags, $dropTags): void {
+        foreach (iterator_to_array($parent->childNodes) as $node) {
+            if ($node instanceof DOMComment) {
+                $parent->removeChild($node);
+                continue;
+            }
+            if (!$node instanceof DOMElement) {
+                continue;
+            }
+
+            $tag = strtolower($node->tagName);
+            if (in_array($tag, $dropTags, true)) {
+                $parent->removeChild($node);
+                continue;
+            }
+
+            $sanitizeChildren($node);
+            if (!in_array($tag, $allowedTags, true)) {
+                while ($node->firstChild) {
+                    $parent->insertBefore($node->firstChild, $node);
+                }
+                $parent->removeChild($node);
+                continue;
+            }
+
+            $attributes = [];
+            foreach ($node->attributes as $attribute) {
+                $attributes[] = $attribute->name;
+            }
+            foreach ($attributes as $attributeName) {
+                $value = trim($node->getAttribute($attributeName));
+                $keep = false;
+                if ($attributeName === 'class') {
+                    $classes = preg_split('/\s+/', $value, -1, PREG_SPLIT_NO_EMPTY);
+                    $classes = array_values(array_filter($classes, static function (string $class): bool {
+                        return preg_match('/^(ql-align-(center|right|justify)|ql-size-(small|large|huge)|ql-indent-[1-8]|ql-direction-rtl|ql-font-(serif|monospace))$/', $class) === 1;
+                    }));
+                    if ($classes) {
+                        $node->setAttribute('class', implode(' ', $classes));
+                        $keep = true;
+                    }
+                } elseif ($attributeName === 'data-list' && $tag === 'li' && in_array($value, ['ordered', 'bullet'], true)) {
+                    $keep = true;
+                } elseif ($attributeName === 'style') {
+                    $safeStyles = [];
+                    foreach (explode(';', $value) as $declaration) {
+                        $parts = explode(':', $declaration, 2);
+                        if (count($parts) !== 2) {
+                            continue;
+                        }
+                        $property = strtolower(trim($parts[0]));
+                        $styleValue = trim($parts[1]);
+                        if (in_array($property, ['color', 'background-color'], true)
+                            && preg_match('/^(#[0-9a-f]{3,8}|rgba?\([0-9.,%\s]+\)|[a-z]{3,20})$/i', $styleValue) === 1) {
+                            $safeStyles[] = $property . ': ' . $styleValue;
+                        } elseif ($property === 'text-align' && in_array(strtolower($styleValue), ['left', 'center', 'right', 'justify'], true)) {
+                            $safeStyles[] = $property . ': ' . strtolower($styleValue);
+                        }
+                    }
+                    if ($safeStyles) {
+                        $node->setAttribute('style', implode('; ', $safeStyles));
+                        $keep = true;
+                    }
+                } elseif ($tag === 'a' && $attributeName === 'href') {
+                    $scheme = strtolower((string)parse_url($value, PHP_URL_SCHEME));
+                    if (substr($value, 0, 2) !== '//' && ($scheme === '' || in_array($scheme, ['http', 'https', 'mailto', 'tel'], true))) {
+                        $keep = true;
+                    }
+                } elseif ($tag === 'a' && $attributeName === 'target' && $value === '_blank') {
+                    $keep = true;
+                }
+
+                if (!$keep) {
+                    $node->removeAttribute($attributeName);
+                }
+            }
+
+            if ($tag === 'a' && $node->getAttribute('target') === '_blank' && $node->hasAttribute('href')) {
+                $node->setAttribute('rel', 'noopener noreferrer');
+            }
+        }
+    };
+    $sanitizeChildren($root);
+
+    $result = '';
+    foreach ($root->childNodes as $child) {
+        $result .= $document->saveHTML($child);
+    }
+    return $result;
+}
+
 // CSRF token
 function csrf_token()
 {

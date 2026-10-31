@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/admin_auth.php';
 require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../includes/functions.php';
 require_once __DIR__ . '/../../includes/admin_header.php';
 
 require_admin();
@@ -9,9 +10,11 @@ ensure_product_columns($pdo);
 ensure_product_images_table($pdo);
 $cats = $pdo->query('SELECT * FROM categories WHERE status = 1')->fetchAll();
 $errors = [];
+$descriptionValue = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) { $errors[]='Invalid CSRF'; }
     $title = trim($_POST['title'] ?? '');
+    $descriptionValue = sanitize_product_description((string)($_POST['description'] ?? ''));
     $category_id = (int)($_POST['category_id'] ?? 0);
     $price = (float)($_POST['price'] ?? 0);
     $discountInput = trim((string)($_POST['discount_price'] ?? ''));
@@ -48,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $taxInput = trim((string)($_POST['tax_rate'] ?? ''));
         $tax_rate = $taxInput !== '' ? (float)$taxInput : null;
         $stmt = $pdo->prepare('INSERT INTO products (category_id, title, slug, isbn, author, publisher, description, price, discount_price, stock, cover_image, youtube_video_url, status, is_featured, tax_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-        $stmt->execute([$category_id, $title, $slug, $isbn, $author, trim((string)($_POST['publisher'] ?? '')) ?: null, trim((string)($_POST['description'] ?? '')) ?: null, $price, $discount, $stock, $imageName, $youtubeVideoUrl !== '' ? $youtubeVideoUrl : null, isset($_POST['status'])?1:0, isset($_POST['is_featured'])?1:0, $tax_rate]);
+        $stmt->execute([$category_id, $title, $slug, $isbn, $author, trim((string)($_POST['publisher'] ?? '')) ?: null, $descriptionValue !== '' ? $descriptionValue : null, $price, $discount, $stock, $imageName, $youtubeVideoUrl !== '' ? $youtubeVideoUrl : null, isset($_POST['status'])?1:0, isset($_POST['is_featured'])?1:0, $tax_rate]);
           $newProductImages = $galleryImages;
           if ($imageName !== null) {
             array_unshift($newProductImages, $imageName);
@@ -95,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="col-md-6 mb-3"><label class="form-label">ISBN</label><input name="isbn" class="form-control"></div>
           <div class="col-md-6 mb-3"><label class="form-label">Stock</label><input name="stock" type="number" class="form-control" value="0"></div>
         </div>
-        <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="6"></textarea></div>
+        <div class="mb-3 rich-text-editor"><label class="form-label" for="productDescription">Description</label><textarea name="description" id="productDescription" class="form-control" rows="6" data-rich-text-source><?= esc($descriptionValue) ?></textarea><div class="rich-text-editor" data-rich-text-editor></div></div>
         <div class="mb-3"><label class="form-label" for="youtubeVideoUrl">YouTube Video Link <span class="text-muted">(optional)</span></label><input name="youtube_video_url" id="youtubeVideoUrl" type="url" class="form-control" placeholder="https://www.youtube.com/watch?v=..." data-youtube-preview-target="#youtubePreview"><div class="form-text">The video will appear in the product image carousel.</div><div id="youtubePreview" class="youtube-preview" hidden></div></div>
       </div>
     </div>
