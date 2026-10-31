@@ -73,7 +73,7 @@ function sanitize_product_description(?string $html): string
                 if ($attributeName === 'class') {
                     $classes = preg_split('/\s+/', $value, -1, PREG_SPLIT_NO_EMPTY);
                     $classes = array_values(array_filter($classes, static function (string $class): bool {
-                        return preg_match('/^(ql-align-(center|right|justify)|ql-size-(small|large|huge)|ql-indent-[1-8]|ql-direction-rtl|ql-font-(serif|monospace))$/', $class) === 1;
+                        return $class === 'ql-ui' || preg_match('/^(ql-align-(center|right|justify)|ql-size-(small|large|huge)|ql-indent-[1-8]|ql-direction-rtl|ql-font-(serif|monospace))$/', $class) === 1;
                     }));
                     if ($classes) {
                         $node->setAttribute('class', implode(' ', $classes));

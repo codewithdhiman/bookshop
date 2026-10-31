@@ -104,7 +104,7 @@ $galleryItemCount = count($gallery) + ($youtubeEmbedUrl ? 1 : 0);
     </div>
 
     <div class="specs">
-      <div class="product-description"><?= $description ?></div>
+      <div class="product-description ql-editor"><?= $description ?></div>
     </div>
 
     <p class="mt-2">

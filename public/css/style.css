@@ -60,6 +60,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helv
 	margin-bottom: 0;
 }
 
+.product-description.ql-editor {
+	height: auto;
+	min-height: 0;
+	overflow: visible;
+	padding: 0;
+}
+
 .product-description .ql-align-center {
 	text-align: center;
 }
