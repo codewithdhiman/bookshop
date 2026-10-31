@@ -1,0 +1,2 @@
+RewriteEngine On
+RewriteRule ^product/([A-Za-z0-9_-]+)/?$ product.php?slug=$1 [L,QSA]

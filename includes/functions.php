@@ -155,6 +155,32 @@ function slugify($text): string
     return $text ?: 'n-a';
 }
 
+function product_url(string $slug): string
+{
+    return base_url('product/' . rawurlencode($slug));
+}
+
+function absolute_url(string $path, string $siteUrl = ''): string
+{
+    $path = '/' . ltrim($path, '/');
+    $siteUrl = rtrim(trim($siteUrl), '/');
+    if (preg_match('~^https?://~i', $siteUrl)) {
+        $sitePath = rtrim((string)parse_url($siteUrl, PHP_URL_PATH), '/');
+        $appPath = rtrim(BASE_URL, '/');
+        if ($sitePath !== '' && $sitePath === $appPath && str_starts_with($path, $appPath . '/')) {
+            $path = substr($path, strlen($appPath));
+        }
+        return $siteUrl . '/' . ltrim($path, '/');
+    }
+
+    $host = (string)($_SERVER['HTTP_HOST'] ?? '');
+    if (!preg_match('/^[a-z0-9.-]+(?::\d+)?$/i', $host)) {
+        return $path;
+    }
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    return $scheme . '://' . $host . $path;
+}
+
 // Cart operations (stored in session)
 function cart_get(): array
 {
@@ -304,7 +330,7 @@ function save_seo_meta(PDO $pdo, string $entity_type, ?int $entity_id, array $da
 function render_seo_meta(PDO $pdo): void
 {
     $siteName = get_setting($pdo, 'site_name', 'Bookshop');
-    $siteUrl = rtrim(get_setting($pdo, 'site_url', base_url()), '/');
+    $siteUrl = (string)get_setting($pdo, 'site_url', '');
 
     $script = basename($_SERVER['SCRIPT_NAME']);
 
@@ -320,15 +346,23 @@ function render_seo_meta(PDO $pdo): void
     }
 
     // Page-specific
-    if ($script === 'product.php' && !empty($_GET['id'])) {
-        $id = (int)$_GET['id'];
-        $p = $pdo->prepare('SELECT * FROM products WHERE id = ? LIMIT 1'); $p->execute([$id]); $prod = $p->fetch();
+    if ($script === 'product.php' && (!empty($_GET['slug']) || !empty($_GET['id']))) {
+        $slug = trim((string)($_GET['slug'] ?? ''));
+        $id = (int)($_GET['id'] ?? 0);
+        if ($slug !== '') {
+            $p = $pdo->prepare('SELECT * FROM products WHERE slug = ? LIMIT 1');
+            $p->execute([$slug]);
+        } else {
+            $p = $pdo->prepare('SELECT * FROM products WHERE id = ? LIMIT 1');
+            $p->execute([$id]);
+        }
+        $prod = $p->fetch();
         if ($prod) {
-            $seo = get_seo_meta($pdo, 'product', $id);
+            $seo = get_seo_meta($pdo, 'product', (int)$prod['id']);
             $meta['title'] = $seo['seo_title'] ?? ($prod['title'] . ' | ' . $siteName);
             $meta['description'] = $seo['seo_description'] ?? substr(strip_tags($prod['description'] ?? ''), 0, 160);
             $meta['og_image'] = $seo['og_image'] ?? ($prod['cover_image'] ? base_url('public/uploads/' . $prod['cover_image']) : null);
-            $meta['url'] = $seo['canonical'] ?? ($siteUrl . '/' . ltrim(base_url('product.php?id=' . $id), '/'));
+            $meta['url'] = $seo['canonical'] ?: absolute_url(product_url((string)$prod['slug']), $siteUrl);
             // JSON-LD Product
             echo "<meta name=\"description\" content=\"" . esc($meta['description']) . "\">\n";
             echo "<link rel=\"canonical\" href=\"" . esc($meta['url']) . "\">\n";

@@ -1,18 +1,35 @@
 <?php
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/functions.php';
 
-$id = (int)($_GET['id'] ?? 0);
-if (!$id) {
-  header('Location: ' . base_url('products.php')); exit;
-}
-require_once __DIR__ . '/includes/header.php';
 $pdo = getPDO();
 ensure_product_columns($pdo);
-ensure_product_images_table($pdo);
-$stmt = $pdo->prepare('SELECT p.*, c.name as category_name FROM products p JOIN categories c ON c.id = p.category_id WHERE p.id = ? AND p.status = 1 LIMIT 1');
-$stmt->execute([$id]);
+$id = (int)($_GET['id'] ?? 0);
+$slug = trim((string)($_GET['slug'] ?? ''));
+if ($slug !== '') {
+  $stmt = $pdo->prepare('SELECT p.*, c.name as category_name FROM products p JOIN categories c ON c.id = p.category_id WHERE p.slug = ? AND p.status = 1 LIMIT 1');
+  $stmt->execute([$slug]);
+} elseif ($id > 0) {
+  $stmt = $pdo->prepare('SELECT p.*, c.name as category_name FROM products p JOIN categories c ON c.id = p.category_id WHERE p.id = ? AND p.status = 1 LIMIT 1');
+  $stmt->execute([$id]);
+} else {
+  header('Location: ' . base_url('products.php'));
+  exit;
+}
 $p = $stmt->fetch();
-if (!$p) { echo '<div class="alert alert-danger">Product not found.</div>'; require __DIR__ . '/includes/footer.php'; exit; }
+if (!$p) {
+  http_response_code(404);
+  require_once __DIR__ . '/includes/header.php';
+  echo '<div class="alert alert-danger">Product not found.</div>';
+  require __DIR__ . '/includes/footer.php';
+  exit;
+}
+if ($slug === '') {
+  header('Location: ' . product_url((string)$p['slug']), true, 301);
+  exit;
+}
+require_once __DIR__ . '/includes/header.php';
+ensure_product_images_table($pdo);
 
 $title = $p['title'] ?? 'Untitled Book';
 $author = $p['author'] ?? 'Unknown Author';

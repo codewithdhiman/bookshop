@@ -26,7 +26,7 @@ $cats = $pdo->query('SELECT * FROM categories WHERE status = 1 LIMIT 4')->fetchA
     <div class="col-12 col-md-5">
       <div class="hero-visual">
         <?php foreach ($featured as $i => $p): ?>
-          <a href="<?= base_url('product.php?id=' . (int)$p['id']) ?>" class="hero-book" aria-label="View <?= esc($p['title']) ?>">
+          <a href="<?= product_url((string)$p['slug']) ?>" class="hero-book" aria-label="View <?= esc($p['title']) ?>">
             <img src="<?= base_url('public/uploads/' . ($p['listing_image'] ?? $p['cover_image'] ?? 'placeholder.png')) ?>" alt="<?= esc($p['title']) ?>" class="hero-book-image" style="--i:<?= $i ?>">
           </a>
         <?php endforeach; ?>
@@ -80,7 +80,7 @@ $cats = $pdo->query('SELECT * FROM categories WHERE status = 1 LIMIT 4')->fetchA
                 <?php endif; ?>
               </p>
               <div class="mt-auto">
-                <a href="<?= base_url('product.php?id=' . $productId) ?>" class="btn btn-sm btn-outline-primary">View</a>
+                <a href="<?= product_url((string)$p['slug']) ?>" class="btn btn-sm btn-outline-primary">View</a>
                 <?php if ($stock > 0): ?>
                   <form method="post" action="<?= base_url('cart.php') ?>" class="d-inline ms-2">
                     <input type="hidden" name="action" value="add">

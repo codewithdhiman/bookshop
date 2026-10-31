@@ -113,7 +113,7 @@ $pages = (int)ceil($total / $perPage);
     ?>
     <div class="product-item">
       <div class="card h-100 product-card">
-        <a href="<?= base_url('product.php?id=' . $productId) ?>" class="text-decoration-none text-reset">
+        <a href="<?= product_url((string)$p['slug']) ?>" class="text-decoration-none text-reset">
           <img src="<?= base_url('public/uploads/' . $cover) ?>" alt="<?= esc($title) ?>">
           <div class="card-body d-flex flex-column">
             <h5 class="product-title"><?= esc($title) ?></h5>
@@ -142,7 +142,7 @@ $pages = (int)ceil($total / $perPage);
             <input type="hidden" name="action" value="add">
             <input type="hidden" name="product_id" value="<?= $productId ?>">
             <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-            <a href="<?= base_url('product.php?id=' . $productId) ?>" class="btn btn-sm btn-outline-primary flex-grow-1">View</a>
+            <a href="<?= product_url((string)$p['slug']) ?>" class="btn btn-sm btn-outline-primary flex-grow-1">View</a>
             <button type="submit" class="btn btn-sm btn-primary" <?= $stock<=0? 'disabled':'' ?>>Add</button>
           </form>
         </div>

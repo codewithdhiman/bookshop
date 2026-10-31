@@ -8,11 +8,11 @@ if ($action === 'add' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $productId = (int)($_POST['product_id'] ?? 0);
     $qty = max(1, (int)($_POST['quantity'] ?? 1));
     $pdo = getPDO();
-    $stmt = $pdo->prepare('SELECT stock FROM products WHERE id = ? AND status = 1 LIMIT 1');
+    $stmt = $pdo->prepare('SELECT stock, slug FROM products WHERE id = ? AND status = 1 LIMIT 1');
     $stmt->execute([$productId]);
     $p = $stmt->fetch();
     if (!$p) { $_SESSION['flash_error']='Product not found'; header('Location: ' . base_url('products.php')); exit; }
-    if ($qty > $p['stock']) { $_SESSION['flash_error']='Requested quantity exceeds stock'; header('Location: ' . base_url('product.php?id=' . $productId)); exit; }
+    if ($qty > $p['stock']) { $_SESSION['flash_error']='Requested quantity exceeds stock'; header('Location: ' . product_url((string)$p['slug'])); exit; }
     cart_add($productId, $qty);
     header('Location: ' . base_url('cart.php')); exit;
 }
